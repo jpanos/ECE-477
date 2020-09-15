@@ -2,3 +2,5 @@ Drivers/*
 EWARM/*
 .mxproject
 .project
+.metadata
+*\Drivers\*
