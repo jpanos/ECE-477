@@ -47,8 +47,8 @@ ECE_477_CM7.bin \
 all: ECE_477_CM7.elf secondary-outputs
 
 # Tool invocations
-ECE_477_CM7.elf: $(OBJS) $(USER_OBJS) C:\Users\Josh\ Panos\STM32CubeIDE\workspace_1.4.0\ECE_477\CM7\STM32H745ZITX_FLASH.ld
-	arm-none-eabi-gcc -o "ECE_477_CM7.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"C:\Users\Josh Panos\STM32CubeIDE\workspace_1.4.0\ECE_477\CM7\STM32H745ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ECE_477_CM7.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+ECE_477_CM7.elf: $(OBJS) $(USER_OBJS) C:\Users\Josh\ Panos\Documents\ECE-477\stm\ECE_477\CM7\STM32H745ZITX_FLASH.ld
+	arm-none-eabi-gcc -o "ECE_477_CM7.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"C:\Users\Josh Panos\Documents\ECE-477\stm\ECE_477\CM7\STM32H745ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ECE_477_CM7.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

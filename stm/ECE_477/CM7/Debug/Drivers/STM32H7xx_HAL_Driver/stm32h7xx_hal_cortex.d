@@ -1,5 +1,5 @@
 Drivers/STM32H7xx_HAL_Driver/stm32h7xx_hal_cortex.o: \
- C:/Users/Josh\ Panos/STM32CubeIDE/workspace_1.4.0/ECE_477/Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c \
+ C:/Users/Josh\ Panos/Documents/ECE-477/stm/ECE_477/Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c \
  ../../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h \
  ../Core/Inc/stm32h7xx_hal_conf.h \
  ../../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc.h \
