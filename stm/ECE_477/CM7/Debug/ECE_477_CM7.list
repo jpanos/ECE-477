@@ -599,8 +599,8 @@ void SystemClock_Config(void)
 
   /** Supply configuration update enable
   */
-  HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
- 80005fc:	2002      	movs	r0, #2
+  HAL_PWREx_ConfigSupply(PWR_DIRECT_SMPS_SUPPLY);
+ 80005fc:	2004      	movs	r0, #4
  80005fe:	f000 fcff 	bl	8001000 <HAL_PWREx_ConfigSupply>
   /** Configure the main internal regulator output voltage
   */
