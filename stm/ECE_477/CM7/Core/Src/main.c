@@ -131,6 +131,7 @@ Error_Handler();
 	static unsigned short pin_state3 = 0;
 	static unsigned short pin_state4 = 0;
 	static unsigned short User_Button = 0;
+	static unsigned short Touch_Button = 0;
 
 
 
@@ -142,10 +143,10 @@ Error_Handler();
     /* USER CODE BEGIN 3 */
 
 		User_Button = HAL_GPIO_ReadPin(Push_GPIO_Port, Push_Pin);
-
+		Touch_Button = HAL_GPIO_ReadPin(Touch_GPIO_Port, Touch_Pin);
 
 		//HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, User_Button);
-		if(User_Button){
+		if(Touch_Button){
 			  HAL_Delay(6);
 			  pin_state = !pin_state;
 			  HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, pin_state);
@@ -254,6 +255,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : Touch_Pin */
+  GPIO_InitStruct.Pin = Touch_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(Touch_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LED2_Pin */
   GPIO_InitStruct.Pin = LED2_Pin;

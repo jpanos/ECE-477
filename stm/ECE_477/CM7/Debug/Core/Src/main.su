@@ -1,4 +1,4 @@
 main.c:66:5:main	16	static
-main.c:182:6:SystemClock_Config	120	static
-main.c:230:13:MX_GPIO_Init	40	static
-main.c:275:6:Error_Handler	4	static
+main.c:183:6:SystemClock_Config	120	static
+main.c:231:13:MX_GPIO_Init	40	static
+main.c:282:6:Error_Handler	4	static
