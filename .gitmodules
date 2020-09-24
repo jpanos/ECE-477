@@ -1,0 +1,3 @@
+[submodule "stm/persephone/mavlink"]
+	path = stm/persephone/mavlink
+	url = https://github.com/mavlink/c_library_v1.git
