@@ -155,6 +155,8 @@ int main(void)
 //	TIM6->CR1 |= TIM_CR1_CEN;
 
 	mavlink_initialize();
+	set_mavlink_msg_interval(0, 10000);
+
 	//  /* USER CODE END 2 */
 	//
 	//  /* Infinite loop */

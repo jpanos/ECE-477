@@ -6,7 +6,12 @@ mavlink_system_t mavlink_system = {
 };
 
 mavlink_message_t _hb_msg;
-__attribute__((section(".dma_buffer"))) uint8_t msg_buff[263];
+__attribute__((section(".dma_buffer"))) uint8_t _msg_buff[263];
+
+
+mavlink_message_t _rcv_msg;
+mavlink_status_t _rcv_msg_stat;
+mavlink_heartbeat_t _rcv_msg_heartbeat;
 
 uint8_t _initialize_UART_DMA(void) {
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOAEN | RCC_AHB4ENR_GPIOBEN;
@@ -23,7 +28,11 @@ uint8_t _initialize_UART_DMA(void) {
 	USART1->BRR = 64000000 / 57600; // fixed?
 	USART1->CR1 |= USART_CR1_RE | USART_CR1_TE; // enable rx and tx
 	USART1->CR2 &= ~(USART_CR2_STOP); // 1 stop bit
-	USART1->CR3 |= USART_CR3_DMAT;
+	USART1->CR3 |= USART_CR3_DMAT; // enable transmit DMA
+
+	USART1->CR1 |= USART_CR1_RXNEIE;
+	NVIC_EnableIRQ(USART1_IRQn);
+
 	USART1->CR1 |= USART_CR1_UE;
 
 	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;
@@ -66,12 +75,32 @@ uint8_t mavlink_initialize(void) {
 uint8_t send_mavlink_message(mavlink_message_t *msg) {
 	while ((DMA1_Stream0->CR & 0x1) == 1) {}
 	DMA1->LIFCR |= DMA_LIFCR_CTCIF0 | DMA_LIFCR_CHTIF0 | DMA_LIFCR_CFEIF0 | DMA_LIFCR_CTEIF0;
-	uint8_t * pointer = msg_buff;
-	mavlink_msg_to_send_buffer(msg_buff, msg);
+	mavlink_msg_to_send_buffer(_msg_buff, msg);
 	DMA1_Stream0->NDTR = msg->len + 12;
-	DMA1_Stream0->M0AR = (unsigned int) msg_buff;
+	DMA1_Stream0->M0AR = (unsigned int) _msg_buff;
   DMA1_Stream0->CR |= DMA_SxCR_EN;
   return 0;
+}
+
+uint8_t set_mavlink_msg_interval(uint16_t message_id, int32_t interval_us) {
+	mavlink_message_t msg;
+	mavlink_msg_message_interval_pack(
+			mavlink_system.sysid,
+			mavlink_system.compid,
+			&msg,
+			message_id,
+			interval_us
+			);
+	return send_mavlink_message(&msg);
+}
+
+uint8_t parse_mavlink_message(mavlink_message_t *msg) {
+	switch (msg->msgid) {
+		case MAVLINK_MSG_ID_HEARTBEAT:
+			mavlink_msg_heartbeat_decode(msg, &_rcv_msg_heartbeat);
+			break;
+	}
+	return 0;
 }
 
 void TIM6_DAC_IRQHandler() {
@@ -83,4 +112,12 @@ void TIM6_DAC_IRQHandler() {
 	// DMA1_Stream0->NDTR = 12;
 
 	//TIM6->CR1 &= TIM_CR1_CEN;
+}
+
+void USART1_IRQHandler() {
+	if ((USART1->ISR & USART_ISR_RXNE_RXFNE) == USART_ISR_RXNE_RXFNE) {
+		if (mavlink_parse_char(MAVLINK_COMM_0, USART1->RDR, &_rcv_msg, &_rcv_msg_stat)) {
+			parse_mavlink_message(&_rcv_msg);
+		}
+	}
 }
