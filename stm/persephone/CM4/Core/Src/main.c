@@ -22,7 +22,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-uint8_t int_buff[263];
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
