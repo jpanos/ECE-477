@@ -117,43 +117,6 @@ int main(void)
   /* Initialize all configured peripherals */
   /* USER CODE BEGIN 2 */
 
-//	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOBEN | RCC_AHB4ENR_GPIOCEN | RCC_AHB4ENR_GPIOAEN;
-//	GPIOB->MODER &= ~(GPIO_MODER_MODE14);
-//	GPIOB->MODER |= GPIO_MODER_MODE14_0;
-//	// GPIOB->ODR |= 1 << 14;
-//	GPIOC->MODER &= ~(GPIO_MODER_MODE13);
-//	// int i, mask = 1;
-//
-//	GPIOA->MODER &= ~(GPIO_MODER_MODE9 | GPIO_MODER_MODE10);
-//	GPIOA->MODER |= GPIO_MODER_MODE9_1 | GPIO_MODER_MODE10_1;
-//	GPIOA->AFR[1] &= ~(GPIO_AFRH_AFRH1 | GPIO_AFRH_AFRH2);
-//	GPIOA->AFR[1] |= (7 << 4) | (7 << 8);
-//
-//	RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
-//	USART1->CR1 &= ~(USART_CR1_M0 | USART_CR1_M1); //1 start bit, 8 data bits, n stob bits
-//	USART1->BRR = 64000000 / 57600; // fixed?
-//	USART1->CR1 |= USART_CR1_RE | USART_CR1_TE; // enable rx and tx
-//	USART1->CR2 &= ~(USART_CR2_STOP); // 1 stop bit
-//	USART1->CR3 |= USART_CR3_DMAT;
-//	USART1->CR1 |= USART_CR1_UE;
-//
-//	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;
-//	DMA1_Stream0->CR |= DMA_MINC_ENABLE | DMA_SxCR_DIR_0 | DMA_SxCR_TRBUFF;
-//	DMA1_Stream0->NDTR = 12;
-//	DMA1_Stream0->PAR = (unsigned int) &USART1->TDR;
-//	DMA1_Stream0->M0AR = (unsigned int) Hello_Buff;
-//
-//	DMAMUX1_Channel0->CCR = 42; // uart1_tx_req42
-//	// DMA1_Stream0->CR |= DMA_SxCR_EN;
-//
-//	RCC->APB1LENR |= RCC_APB1LENR_TIM6EN;
-//	TIM6->PSC = 65000 - 1;
-//	TIM6->ARR = 1000;
-//	TIM6->DIER |= TIM_DIER_UIE;
-//
-//	NVIC_EnableIRQ(TIM6_DAC_IRQn);
-//	TIM6->CR1 |= TIM_CR1_CEN;
-
 	mavlink_initialize();
 	// set_mavlink_msg_interval(0, 10000);
 
@@ -163,10 +126,7 @@ int main(void)
 	//  /* USER CODE BEGIN WHILE */
 	while (1)
 	{
-//		for (i = 0;  i < 1000000; i++) {}
-//		GPIOB->ODR ^= (1 << 14) * mask;
-//		if (GPIOC->IDR != 0) mask = 0;
-//		else mask = 1;
+
 		/* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
