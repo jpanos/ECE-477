@@ -99,6 +99,8 @@ uint8_t parse_mavlink_message(mavlink_message_t *msg) {
 		case MAVLINK_MSG_ID_HEARTBEAT:
 			mavlink_msg_heartbeat_decode(msg, &_rcv_msg_heartbeat);
 			break;
+		case MAVLINK_MSG_ID_SYS_STATUS:
+			break;
 	}
 	return 0;
 }
