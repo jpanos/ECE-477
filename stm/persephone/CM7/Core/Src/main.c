@@ -118,7 +118,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 	mavlink_initialize();
-	// set_mavlink_msg_interval(0, 10000);
+	set_mavlink_msg_interval(MAVLINK_MSG_ID_TRAJECTORY_REPRESENTATION_WAYPOINTS, 10000);
 
 	//  /* USER CODE END 2 */
 	//

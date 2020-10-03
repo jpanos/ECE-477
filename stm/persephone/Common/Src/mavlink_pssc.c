@@ -12,6 +12,7 @@ __attribute__((section(".dma_buffer"))) uint8_t _msg_buff[263];
 mavlink_message_t _rcv_msg;
 mavlink_status_t _rcv_msg_stat;
 mavlink_heartbeat_t _rcv_msg_heartbeat;
+mavlink_trajectory_representation_waypoints_t _rcv_msg_traj_way;
 
 uint8_t _initialize_UART_DMA(void) {
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOAEN | RCC_AHB4ENR_GPIOBEN;
@@ -99,7 +100,8 @@ uint8_t parse_mavlink_message(mavlink_message_t *msg) {
 		case MAVLINK_MSG_ID_HEARTBEAT:
 			mavlink_msg_heartbeat_decode(msg, &_rcv_msg_heartbeat);
 			break;
-		case MAVLINK_MSG_ID_SYS_STATUS:
+		case MAVLINK_MSG_ID_TRAJECTORY_REPRESENTATION_WAYPOINTS:
+			mavlink_msg_trajectory_representation_waypoints_decode(msg, &_rcv_msg_traj_way);
 			break;
 	}
 	return 0;
