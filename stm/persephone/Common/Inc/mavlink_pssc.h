@@ -14,7 +14,12 @@
 #include <stm32h7xx_hal.h>
 #include <common/mavlink.h>
 
+// initializes all IO and starts sending the
+// heartbeat message at a rate of 1Hz
 uint8_t mavlink_initialize(void);
+
+// will send a message to flight controller instructing it to send
+// the message_id specified at the interval specified
 uint8_t set_mavlink_msg_interval(uint16_t message_id, int32_t interval_us);
 
 

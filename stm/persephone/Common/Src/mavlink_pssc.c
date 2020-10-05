@@ -16,9 +16,12 @@ mavlink_trajectory_representation_waypoints_t _rcv_msg_traj_way;
 
 uint8_t _initialize_UART_DMA(void) {
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOAEN | RCC_AHB4ENR_GPIOBEN;
+	// put red led in output mode
 	GPIOB->MODER &= ~(GPIO_MODER_MODE14);
 	GPIOB->MODER |= GPIO_MODER_MODE14_0;
 
+	// UART configuration
+	// configure tx and rx pins of USART1
 	GPIOA->MODER &= ~(GPIO_MODER_MODE9 | GPIO_MODER_MODE10);
 	GPIOA->MODER |= GPIO_MODER_MODE9_1 | GPIO_MODER_MODE10_1;
 	GPIOA->AFR[1] &= ~(GPIO_AFRH_AFRH1 | GPIO_AFRH_AFRH2);
@@ -31,23 +34,24 @@ uint8_t _initialize_UART_DMA(void) {
 	USART1->CR2 &= ~(USART_CR2_STOP); // 1 stop bit
 	USART1->CR3 |= USART_CR3_DMAT; // enable transmit DMA
 
-	USART1->CR1 |= USART_CR1_RXNEIE;
+	USART1->CR1 |= USART_CR1_RXNEIE; // recieve not empty interrupt enable
 	NVIC_EnableIRQ(USART1_IRQn);
 
 	USART1->CR1 |= USART_CR1_UE;
 
+	// DMA configuration
 	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;
+	// increment memory location, memory to peripheral, said to enable for usart idk
 	DMA1_Stream0->CR |= DMA_MINC_ENABLE | DMA_SxCR_DIR_0 | DMA_SxCR_TRBUFF;
 	DMA1_Stream0->PAR = (unsigned int) &USART1->TDR;
-
 	DMAMUX1_Channel0->CCR = 42; // uart1_tx_req42
-	// DMA1_Stream0->CR |= DMA_SxCR_EN;
 
+	// enable timer interrupt to go off 1Hz
+	// configured if main clock is 65 MHz
 	RCC->APB1LENR |= RCC_APB1LENR_TIM6EN;
 	TIM6->PSC = 65000 - 1;
 	TIM6->ARR = 1000;
 	TIM6->DIER |= TIM_DIER_UIE;
-
 	NVIC_EnableIRQ(TIM6_DAC_IRQn);
 	TIM6->CR1 |= TIM_CR1_CEN;
 
@@ -74,16 +78,23 @@ uint8_t mavlink_initialize(void) {
 }
 
 uint8_t send_mavlink_message(mavlink_message_t *msg) {
+	// wait for current DMA transfer to end
 	while ((DMA1_Stream0->CR & 0x1) == 1) {}
+	// clear flags that might appear from previous DMA transfer, won't enable otherwise
 	DMA1->LIFCR |= DMA_LIFCR_CTCIF0 | DMA_LIFCR_CHTIF0 | DMA_LIFCR_CFEIF0 | DMA_LIFCR_CTEIF0;
+	// put message struct in buffer to send
 	mavlink_msg_to_send_buffer(_msg_buff, msg);
+	// set dma transfer length, +12 is for header
 	DMA1_Stream0->NDTR = msg->len + 12;
+	// set DMA location
 	DMA1_Stream0->M0AR = (unsigned int) _msg_buff;
+	// enable DMA
   DMA1_Stream0->CR |= DMA_SxCR_EN;
   return 0;
 }
 
 uint8_t set_mavlink_msg_interval(uint16_t message_id, int32_t interval_us) {
+	// given a message id and us interval, device that is sent this command will send mesage at that interval
 	mavlink_message_t msg;
 	mavlink_msg_message_interval_pack(
 			mavlink_system.sysid,
@@ -111,15 +122,18 @@ void TIM6_DAC_IRQHandler() {
 	TIM6->SR &= ~TIM_SR_UIF; // Need to put clear flag up hear, or at least before on other instruction (not directly by bracket)
 	// otherwise NVIC will not register and IRQHandler will fire again.
 
+	// blink light
 	GPIOB->ODR ^= GPIO_ODR_OD14;
+	// send heartbeat message
 	send_mavlink_message(&_hb_msg);
-	// DMA1_Stream0->NDTR = 12;
-
-	//TIM6->CR1 &= TIM_CR1_CEN;
 }
 
 void USART1_IRQHandler() {
+	// check if handler was fired because of receive buffer not empty flag
 	if ((USART1->ISR & USART_ISR_RXNE_RXFNE) == USART_ISR_RXNE_RXFNE) {
+		// mavlink helper function parses message by passing it one char at a time
+		// returns 1 when successfully received/parsed 1 mavlink message
+		// reading from RDR clears RXFNE flag
 		if (mavlink_parse_char(MAVLINK_COMM_0, USART1->RDR, &_rcv_msg, &_rcv_msg_stat)) {
 			parse_mavlink_message(&_rcv_msg);
 		}
