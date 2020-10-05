@@ -47,6 +47,7 @@ MEMORY
 FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 1024K
 RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K
 ITCMRAM (xrw)      : ORIGIN = 0x00000000, LENGTH = 64K
+RAM3 (xrw)      : ORIGIN = 0x10040000, LENGTH = 32K
 }
 
 /* Define output sections */
@@ -157,7 +158,10 @@ SECTIONS
     . = ALIGN(8);
   } >RAM
 
-  
+  .dma_buffer :
+  {
+    *(.dma_buffer)
+  } >RAM3
 
   /* Remove information from the standard libraries */
   /DISCARD/ :

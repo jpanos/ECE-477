@@ -19,7 +19,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include <common/mavlink.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -66,7 +65,7 @@ void SystemClock_Config(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	mavlink_message_t msg;
+	//mavlink_message_t msg;
   /* USER CODE END 1 */
 
 	/* USER CODE BEGIN Boot_Mode_Sequence_0 */
@@ -118,26 +117,8 @@ int main(void)
   /* Initialize all configured peripherals */
   /* USER CODE BEGIN 2 */
 
-	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOBEN | RCC_AHB4ENR_GPIOCEN | RCC_AHB4ENR_GPIOAEN;
-	GPIOB->MODER &= ~(0x30000000);
-	GPIOB->MODER |= 0x10000000;
-	GPIOB->ODR |= 1 << 14;
-	GPIOC->MODER &= ~(0xc000000);
-	int i, mask = 1;
-
-	GPIOA->MODER &= ~(GPIO_MODER_MODE9 | GPIO_MODER_MODE10);
-	GPIOA->MODER |= GPIO_MODER_MODE9_1 | GPIO_MODER_MODE10_1;
-	GPIOA->AFR[1] &= ~(GPIO_AFRH_AFRH1 | GPIO_AFRH_AFRH2);
-	GPIOA->AFR[1] |= (7 << 4) | (7 << 8);
-
-	RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
-	USART1->CR1 &= ~(USART_CR1_M0 | USART_CR1_M1); //1 start bit, 8 data bits, n stob bits
-	USART1->BRR = 64000000 / 57600; // fixed?
-	USART1->CR1 |= USART_CR1_RE | USART_CR1_TE; // enable rx and tx
-	USART1->CR2 &= ~(USART_CR2_STOP); // 1 stop bit
-	USART1->CR1 |= USART_CR1_UE;
-
-	USART1->TDR = 0xaa;
+	mavlink_initialize();
+	// set_mavlink_msg_interval(MAVLINK_MSG_ID_TRAJECTORY_REPRESENTATION_WAYPOINTS, 10000);
 
 	//  /* USER CODE END 2 */
 	//
@@ -145,10 +126,7 @@ int main(void)
 	//  /* USER CODE BEGIN WHILE */
 	while (1)
 	{
-		for (i = 0;  i < 1000000; i++) {}
-		GPIOB->ODR ^= (1 << 14) * mask;
-		if (GPIOC->IDR != 0) mask = 0;
-		else mask = 1;
+
 		/* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
