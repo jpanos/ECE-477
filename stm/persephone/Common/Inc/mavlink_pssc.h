@@ -22,5 +22,8 @@ uint8_t mavlink_initialize(void);
 // the message_id specified at the interval specified
 uint8_t set_mavlink_msg_interval(uint16_t message_id, int32_t interval_us);
 
+// send ping message
+uint8_t send_ping_message(void);
+
 
 #endif /* INC_MAVLINK_PSSC_H_ */

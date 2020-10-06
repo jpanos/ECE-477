@@ -118,6 +118,11 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 	mavlink_initialize();
+//	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN;
+//	GPIOC->MODER &= ~(0xc000000);
+	set_mavlink_msg_interval(MAVLINK_MSG_ID_PING, 10000);
+	//send_ping_message();
+	// set_mavlink_msg_interval(MAVLINK_MSG_ID_GLOBAL_POSITION_INT, 10000);
 	// set_mavlink_msg_interval(MAVLINK_MSG_ID_TRAJECTORY_REPRESENTATION_WAYPOINTS, 10000);
 
 	//  /* USER CODE END 2 */
@@ -126,7 +131,8 @@ int main(void)
 	//  /* USER CODE BEGIN WHILE */
 	while (1)
 	{
-
+		for (int i = 0; i <10000000; i++){}
+		send_ping_message();
 		/* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
