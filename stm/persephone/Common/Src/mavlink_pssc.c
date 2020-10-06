@@ -8,11 +8,14 @@ mavlink_system_t mavlink_system = {
 mavlink_message_t _hb_msg;
 __attribute__((section(".dma_buffer"))) uint8_t _msg_buff[263];
 
+uint32_t msg_buff_vals[30];
 
 mavlink_message_t _rcv_msg;
 mavlink_status_t _rcv_msg_stat;
 mavlink_heartbeat_t _rcv_msg_heartbeat;
 mavlink_trajectory_representation_waypoints_t _rcv_msg_traj_way;
+mavlink_global_position_int_t _rcv_msg_gps_int;
+mavlink_ping_t _rcv_msg_ping;
 
 uint8_t _initialize_UART_DMA(void) {
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOAEN | RCC_AHB4ENR_GPIOBEN;
@@ -106,10 +109,41 @@ uint8_t set_mavlink_msg_interval(uint16_t message_id, int32_t interval_us) {
 	return send_mavlink_message(&msg);
 }
 
+
+uint8_t send_ping_message(void) {
+	mavlink_message_t msg;
+	mavlink_msg_ping_pack(
+			mavlink_system.sysid,
+			mavlink_system.compid,
+			&msg,
+			10000,
+			40,
+			0, 0); // all systems and components listening
+	return send_mavlink_message(&msg);
+}
+
+void put_val_in_buff(uint32_t val) {
+	for (int i = 0; i < 30; i++) {
+		if (msg_buff_vals[i] == val) break;
+		else if (msg_buff_vals[i] != 0) continue;
+		else {
+			msg_buff_vals[i] = val;
+			break;
+		}
+	}
+}
+
 uint8_t parse_mavlink_message(mavlink_message_t *msg) {
+	put_val_in_buff(msg->msgid);
 	switch (msg->msgid) {
 		case MAVLINK_MSG_ID_HEARTBEAT:
 			mavlink_msg_heartbeat_decode(msg, &_rcv_msg_heartbeat);
+			break;
+		case MAVLINK_MSG_ID_PING:
+			mavlink_msg_ping_decode(msg, &_rcv_msg_ping);
+			break;
+		case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
+			mavlink_msg_global_position_int_decode(msg, &_rcv_msg_gps_int);
 			break;
 		case MAVLINK_MSG_ID_TRAJECTORY_REPRESENTATION_WAYPOINTS:
 			mavlink_msg_trajectory_representation_waypoints_decode(msg, &_rcv_msg_traj_way);
@@ -119,7 +153,8 @@ uint8_t parse_mavlink_message(mavlink_message_t *msg) {
 }
 
 void TIM6_DAC_IRQHandler() {
-	TIM6->SR &= ~TIM_SR_UIF; // Need to put clear flag up hear, or at least before on other instruction (not directly by bracket)
+	TIM6->SR &= ~TIM_SR_UIF; // Need to put clear flag up hear, or at least
+	// before on other instruction (not directly by bracket)
 	// otherwise NVIC will not register and IRQHandler will fire again.
 
 	// blink light
@@ -138,4 +173,5 @@ void USART1_IRQHandler() {
 			parse_mavlink_message(&_rcv_msg);
 		}
 	}
+	USART1->ICR |= 0x123bff;
 }
