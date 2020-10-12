@@ -88,7 +88,11 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
+  // NVIC_EncodePriority(PriorityGroup, PreemptPriority, SubPriority)
+  // NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
+  // NVIC_SetPriority
 
+  mavlink_initialize();
   /* USER CODE END Init */
 
   /* USER CODE BEGIN SysInit */

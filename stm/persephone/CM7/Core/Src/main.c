@@ -117,9 +117,11 @@ int main(void)
   /* Initialize all configured peripherals */
   /* USER CODE BEGIN 2 */
 
-	mavlink_initialize();
-//	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN;
-//	GPIOC->MODER &= ~(0xc000000);
+	// mavlink_initialize();
+
+	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN;
+	GPIOC->MODER &= ~(0xc000000);
+
 	set_mavlink_msg_interval(MAVLINK_MSG_ID_PING, 10000);
 	//send_ping_message();
 	// set_mavlink_msg_interval(MAVLINK_MSG_ID_GLOBAL_POSITION_INT, 10000);
@@ -129,10 +131,17 @@ int main(void)
 	//
 	//  /* Infinite loop */
 	//  /* USER CODE BEGIN WHILE */
+	uint8_t prev_val;
+
 	while (1)
 	{
 		for (int i = 0; i <10000000; i++){}
 		send_ping_message();
+		if (prev_val == 0 && GPIOC->IDR != 0) {
+			GPIOB->ODR ^= GPIO_ODR_OD14;
+			send_arm__disarm_message(1, 1);
+		}
+		prev_val = GPIOC->IDR >> 8;
 		/* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
