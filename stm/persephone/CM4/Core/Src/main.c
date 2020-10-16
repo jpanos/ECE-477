@@ -97,7 +97,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   /* USER CODE BEGIN 2 */
-
+  //I2C2init()
   /* USER CODE END 2 */
 
   /* Infinite loop */
