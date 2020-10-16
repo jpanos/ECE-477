@@ -8,13 +8,13 @@ mavlink_system_t mavlink_system = {
 
 volatile MavlinkSharedData * const mv_shared = (MavlinkSharedData *) MVPSSC_SHARED_SRAM_LOC;
 
-uint8_t queue_message(mavlink_message_t * msg, uint32_t procID) {
+ListNode * queue_message(mavlink_message_t * msg, uint32_t procID) {
 	ListNode * n;
 	spin_lock(HSEM_ID_EMPTY, procID);
 	n = dequeue(&mv_shared->empty_nodes);
 	lock_release(HSEM_ID_EMPTY, procID);
 
-	if (n == NULL) return MVPSSC_FAIL;
+	if (n == NULL) return n;
 
 	MsgData * msgdata = (MsgData *) n->data;
 
@@ -25,7 +25,17 @@ uint8_t queue_message(mavlink_message_t * msg, uint32_t procID) {
 	enqueue(&mv_shared->send_msgs, n);
 	lock_release(HSEM_ID_MSGS, procID);
 
-	return MVPSSC_SUCCESS;
+	return n;
+}
+
+uint8_t send_command(mavlink_message_t * msg) {
+	mv_shared->cmd.done = MVPSSC_CMD_START;
+	ListNode * n = queue_message(msg, 0);
+	mv_shared->cmd.node = n;
+
+	while (mv_shared->cmd.done != MVPSSC_CMD_DONE) {}
+
+	return mv_shared->cmd.result;
 }
 
 
@@ -39,7 +49,8 @@ uint8_t set_mavlink_msg_interval(uint16_t message_id, int32_t interval_us) {
 			message_id,
 			interval_us
 			);
-	return queue_message(&msg, 0);
+	if (queue_message(&msg, 0) != NULL) return MVPSSC_SUCCESS;
+	else return MVPSSC_FAIL;
 }
 
 
@@ -52,10 +63,17 @@ uint8_t send_ping_message(void) {
 			10000,
 			40,
 			0, 0); // all systems and components listening
-	return queue_message(&msg, 0);
+	if (queue_message(&msg, 0) != NULL) return MVPSSC_SUCCESS;
+	else return MVPSSC_FAIL;
 }
 
-uint8_t send_arm__disarm_message(uint8_t armval, uint8_t force) {
+uint8_t send_arm__disarm_message(uint8_t arm, uint8_t force) {
+	int forceval = 0;
+	int armval = 0;
+
+	if (force) forceval = 21196;
+	if (armval) armval = 1;
+
 	mavlink_message_t msg;
 	mavlink_msg_command_int_pack(
 			mavlink_system.sysid,
@@ -67,10 +85,10 @@ uint8_t send_arm__disarm_message(uint8_t armval, uint8_t force) {
 			MAV_CMD_COMPONENT_ARM_DISARM,
 			1,
 			1,
-			1, //arm
-			21196, //force
+			armval, //arm
+			forceval, //force
 			0, 0, 0, 0, 0);
-	return queue_message(&msg, 0);
+	return send_command(&msg);
 }
 
 

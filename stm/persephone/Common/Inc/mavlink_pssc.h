@@ -25,28 +25,47 @@
 
 #define HSEM_ID_EMPTY 15
 #define HSEM_ID_MSGS 16
+#define HSEM_ID_CMD 17
+#define HSEM_ID_CMD_BLOCK HSEM_ID_CMD
 
 #define DMA1_S0_PROC_ID 40
+#define TIM6_PROC_ID 41
+#define UART1_RX_PROC_ID 42
+#define CMD_BLOCK_PROC_ID 43
 
+#define MVPSSC_IS_CMD 1
+#define MVPSSC_IS_NOT_CMD 0
+#define MVPSSC_CMD_DONE 1
+#define MVPSSC_CMD_START 0
 
 extern mavlink_system_t mavlink_system;
 
 typedef struct _msg_data {
 	uint8_t buff[MVPSSC_MSG_MAX_SIZE];
 	uint8_t len;
+	uint8_t is_cmd;
 } MsgData;
+
+typedef struct _cmd_data {
+	ListNode * node;
+	uint8_t result;
+	uint8_t done;
+} CmdData;
 
 typedef struct _mavlink_shared_data {
 	ListNode nodes[MVPSSC_MSG_BUFF_SIZE];
 	MsgData msgs_data[MVPSSC_MSG_BUFF_SIZE];
 	Queue empty_nodes;
 	Queue send_msgs;
-	// List * curr_cmd;
+	CmdData cmd;
 } MavlinkSharedData;
 
 extern volatile MavlinkSharedData * const mv_shared;
 
-uint8_t queue_message(mavlink_message_t * msg, uint32_t procID);
+ListNode * queue_message(mavlink_message_t * msg, uint32_t procID);
+
+// IMPORTANT: only meant to be called by main process in CM7
+uint8_t send_command(mavlink_message_t * msg);
 
 // will send a message to flight controller instructing it to send
 // the message_id specified at the interval specified

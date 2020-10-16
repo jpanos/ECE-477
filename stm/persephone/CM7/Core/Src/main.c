@@ -121,17 +121,21 @@ int main(void)
 
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN;
 	GPIOC->MODER &= ~(0xc000000);
+	GPIOB->ODR ^= GPIO_ODR_OD14;
 
-	set_mavlink_msg_interval(MAVLINK_MSG_ID_PING, 10000);
+	// set_mavlink_msg_interval(MAVLINK_MSG_ID_PING, 10000);
 	//send_ping_message();
 	// set_mavlink_msg_interval(MAVLINK_MSG_ID_GLOBAL_POSITION_INT, 10000);
 	// set_mavlink_msg_interval(MAVLINK_MSG_ID_TRAJECTORY_REPRESENTATION_WAYPOINTS, 10000);
+	// spin_lock_core(HSEM_ID_CMD_BLOCK, 4, CMD_BLOCK_PROC_ID);
 
 	//  /* USER CODE END 2 */
 	//
 	//  /* Infinite loop */
 	//  /* USER CODE BEGIN WHILE */
 	uint8_t prev_val;
+	mavlink_message_t takeoff_msg;
+
 
 	while (1)
 	{
