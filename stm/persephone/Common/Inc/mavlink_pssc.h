@@ -48,6 +48,7 @@ typedef struct _msg_data {
 
 typedef struct _cmd_data {
 	ListNode * node;
+	uint32_t cmd_id;
 	uint8_t result;
 	uint8_t done;
 } CmdData;
@@ -58,6 +59,13 @@ typedef struct _mavlink_shared_data {
 	Queue empty_nodes;
 	Queue send_msgs;
 	CmdData cmd;
+
+	float altitude_rel;
+	float altitude_msl;
+	int latitude_raw;
+	int longitude_raw;
+	int latitude;
+	int longitude;
 } MavlinkSharedData;
 
 extern volatile MavlinkSharedData * const mv_shared;
@@ -65,7 +73,7 @@ extern volatile MavlinkSharedData * const mv_shared;
 ListNode * queue_message(mavlink_message_t * msg, uint32_t procID);
 
 // IMPORTANT: only meant to be called by main process in CM7
-uint8_t send_command(mavlink_message_t * msg);
+uint8_t send_command(uint32_t cmdid, mavlink_message_t * msg);
 
 // will send a message to flight controller instructing it to send
 // the message_id specified at the interval specified
@@ -77,6 +85,6 @@ uint8_t send_ping_message(void);
 // arm/disarm
 // armval: 1 to arm, 0 to disarm
 // force: 1 to force state, 0 to not
-uint8_t send_arm__disarm_message(uint8_t armval, uint8_t force);
+uint8_t send_arm_disarm_message(uint8_t armval, uint8_t force);
 
 #endif /* INC_MAVLINK_PSSC_H_ */

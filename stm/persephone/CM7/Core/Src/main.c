@@ -139,11 +139,13 @@ int main(void)
 
 	while (1)
 	{
-		for (int i = 0; i <10000000; i++){}
+		for (int i = 0; i <1000000; i++){}
 		send_ping_message();
 		if (prev_val == 0 && GPIOC->IDR != 0) {
 			GPIOB->ODR ^= GPIO_ODR_OD14;
-			send_arm__disarm_message(1, 1);
+			send_arm_disarm_message(1, 1);
+			send_command_int(MAV_CMD_NAV_TAKEOFF, MAV_FRAME_GLOBAL, 0, 0, 0, 0,
+												mv_shared->latitude_raw, mv_shared->longitude_raw, mv_shared->altitude_msl + 5);
 		}
 		prev_val = GPIOC->IDR >> 8;
 		/* USER CODE BEGIN 3 */

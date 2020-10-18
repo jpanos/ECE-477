@@ -14,6 +14,7 @@ mavlink_heartbeat_t _rcv_msg_heartbeat;
 mavlink_trajectory_representation_waypoints_t _rcv_msg_traj_way;
 mavlink_global_position_int_t _rcv_msg_gps_int;
 mavlink_gps_raw_int_t _rcv_msg_gps_raw_int;
+mavlink_altitude_t _rcv_msg_altitude;
 mavlink_ping_t _rcv_msg_ping;
 mavlink_command_ack_t _rcv_cmd_ack;
 
@@ -81,7 +82,7 @@ uint8_t _initialize_timers() {
 
 	RCC->APB1LENR |= RCC_APB1LENR_TIM6EN;
 	// had to divide by 8 for M4 for some reason
-	TIM6->PSC = 8000 - 1;
+	TIM6->PSC = 64000 - 1;
 	TIM6->ARR = 50;
 	TIM6->DIER |= TIM_DIER_UIE;
 	NVIC_EnableIRQ(TIM6_DAC_IRQn);
@@ -90,11 +91,12 @@ uint8_t _initialize_timers() {
 	return MVPSSC_SUCCESS;
 }
 
-uint8_t _initialize_queue(Queue * q, ListNode * ll_buff, void * data_array, int length, int data_element_size) {
+uint8_t _initialize_queue(Queue * q, ListNode * ll_buff, void * data_array,
+														int length, int data_element_size) {
 	char * temp = (char *) data_array;
 	init_queue(q);
 	for (int i = 0; i < length; i++) {
-		ll_buff->next = NULL;
+		ll_buff[i].next = NULL;
 		enqueue(q, &ll_buff[i]);
 		ll_buff[i].data = &temp[data_element_size * i];
 	}
@@ -102,9 +104,19 @@ uint8_t _initialize_queue(Queue * q, ListNode * ll_buff, void * data_array, int 
 }
 
 uint8_t mavlink_initialize(void) {
-	_initialize_queue(&mv_shared->empty_nodes, &mv_shared->nodes, &mv_shared->msgs_data, MVPSSC_MSG_BUFF_SIZE, sizeof(MsgData));
+	spin_lock(HSEM_ID_EMPTY, 0);
+	_initialize_queue(&mv_shared->empty_nodes, &mv_shared->nodes, &mv_shared->msgs_data,
+											MVPSSC_MSG_BUFF_SIZE, sizeof(MsgData));
+	lock_release(HSEM_ID_EMPTY, 0);
+
+	spin_lock(HSEM_ID_MSGS, 0);
 	init_queue(&mv_shared->send_msgs);
+	lock_release(HSEM_ID_MSGS, 0);
+
 	mv_shared->cmd.node = NULL;
+	mv_shared->latitude = -1;
+	mv_shared->longitude = -1;
+
 	_initialize_UART_DMA();
 	_heartbeat_msg_initialize();
 	_initialize_timers();
@@ -146,15 +158,33 @@ void put_val_in_buff(uint32_t val) {
 	}
 }
 
-void _handle_cmd_ack() {
-	mv_shared->cmd.result = _rcv_cmd_ack.result;
+void _cmd_cleanup() {
+		ListNode * n = mv_shared->cmd.node;
+		mv_shared->cmd.node = NULL;
 
-	if (_rcv_cmd_ack.result == MAV_RESULT_ACCEPTED) {
 		spin_lock(HSEM_ID_EMPTY, UART1_RX_PROC_ID);
-		enqueue(&mv_shared->empty_nodes, mv_shared->cmd.node);
+		enqueue(&mv_shared->empty_nodes, n);
 		lock_release(HSEM_ID_EMPTY, UART1_RX_PROC_ID);
 
 		mv_shared->cmd.done = MVPSSC_CMD_DONE;
+}
+
+void _handle_cmd_ack() {
+	mv_shared->cmd.result = _rcv_cmd_ack.result;
+	if (mv_shared->cmd.cmd_id == MAV_CMD_NAV_TAKEOFF) {
+		int i = 0;
+	}
+
+	switch (_rcv_cmd_ack.result) {
+		case MAV_RESULT_ACCEPTED:
+		case MAV_RESULT_TEMPORARILY_REJECTED:
+		case MAV_RESULT_DENIED:
+		case MAV_RESULT_UNSUPPORTED:
+		case MAV_RESULT_FAILED:
+		case MAV_RESULT_IN_PROGRESS:
+		case MAV_RESULT_CANCELLED:
+			_cmd_cleanup();
+			break;
 	}
 }
 
@@ -167,14 +197,16 @@ uint8_t parse_mavlink_message(mavlink_message_t *msg) {
 		case MAVLINK_MSG_ID_PING:
 			mavlink_msg_ping_decode(msg, &_rcv_msg_ping);
 			break;
+		case MAVLINK_MSG_ID_ALTITUDE:
+			mavlink_msg_altitude_decode(msg, &_rcv_msg_altitude);
+			mv_shared->altitude_rel = _rcv_msg_altitude.altitude_relative;
+			mv_shared->altitude_msl = _rcv_msg_altitude.altitude_amsl;
+			break;
 		case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
 			mavlink_msg_global_position_int_decode(msg, &_rcv_msg_gps_int);
 			break;
 		case MAVLINK_MSG_ID_GPS_RAW_INT:
 			mavlink_msg_gps_raw_int_decode(msg, &_rcv_msg_gps_raw_int);
-			break;
-		case MAVLINK_MSG_ID_TRAJECTORY_REPRESENTATION_WAYPOINTS:
-			mavlink_msg_trajectory_representation_waypoints_decode(msg, &_rcv_msg_traj_way);
 			break;
 		case MAVLINK_MSG_ID_COMMAND_ACK:
 			mavlink_msg_command_ack_decode(msg, &_rcv_cmd_ack);
@@ -228,16 +260,11 @@ void DMA1_Stream0_IRQHandler() {
 
 		MsgData * msgdata = (MsgData *) n->data;
 
-		if (msgdata->is_cmd == MVPSSC_IS_CMD) {
-			mv_shared->cmd.node = n;
-			mv_shared->cmd.done = MVPSSC_CMD_DONE;
-		}
-		else {
+		if (mv_shared->cmd.node != n) {
 			spin_lock(HSEM_ID_EMPTY, DMA1_S0_PROC_ID);
 			enqueue(&mv_shared->empty_nodes, n);
 			lock_release(HSEM_ID_EMPTY, DMA1_S0_PROC_ID);
 		}
-
 
 		send_next_msg();
 	}

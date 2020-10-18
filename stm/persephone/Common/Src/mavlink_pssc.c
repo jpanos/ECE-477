@@ -28,12 +28,19 @@ ListNode * queue_message(mavlink_message_t * msg, uint32_t procID) {
 	return n;
 }
 
-uint8_t send_command(mavlink_message_t * msg) {
+uint8_t send_command(uint32_t cmdid, mavlink_message_t * msg) {
+	ListNode * n = NULL;
 	mv_shared->cmd.done = MVPSSC_CMD_START;
-	ListNode * n = queue_message(msg, 0);
+
+	while (n == NULL) {
+	 n = queue_message(msg, 0);
+	}
 	mv_shared->cmd.node = n;
+	mv_shared->cmd.cmd_id = cmdid;
 
 	while (mv_shared->cmd.done != MVPSSC_CMD_DONE) {}
+
+	// mv_shared->cmd.node = NULL;
 
 	return mv_shared->cmd.result;
 }
@@ -67,12 +74,12 @@ uint8_t send_ping_message(void) {
 	else return MVPSSC_FAIL;
 }
 
-uint8_t send_arm__disarm_message(uint8_t arm, uint8_t force) {
+uint8_t send_arm_disarm_message(uint8_t arm, uint8_t force) {
 	int forceval = 0;
 	int armval = 0;
 
 	if (force) forceval = 21196;
-	if (armval) armval = 1;
+	if (arm) armval = 1;
 
 	mavlink_message_t msg;
 	mavlink_msg_command_int_pack(
@@ -88,7 +95,23 @@ uint8_t send_arm__disarm_message(uint8_t arm, uint8_t force) {
 			armval, //arm
 			forceval, //force
 			0, 0, 0, 0, 0);
-	return send_command(&msg);
+	return send_command(MAV_CMD_COMPONENT_ARM_DISARM, &msg);
 }
 
+uint8_t send_command_int(uint16_t command, uint8_t frame,
+													float param1, float param2, float param3, float param4, int32_t x, int32_t y, float z) {
+	mavlink_message_t msg;
+	mavlink_msg_command_int_pack(
+			mavlink_system.sysid,
+			mavlink_system.compid,
+			&msg,
+			mavlink_system.sysid,
+			MAV_COMP_ID_AUTOPILOT1,
+			frame,
+			command,
+			1, // current
+			0, // autocontinue
+			param1, param2, param3, param4, x, y, z);
+	return send_command(command, &msg);
+}
 
