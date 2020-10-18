@@ -204,9 +204,13 @@ uint8_t parse_mavlink_message(mavlink_message_t *msg) {
 			break;
 		case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
 			mavlink_msg_global_position_int_decode(msg, &_rcv_msg_gps_int);
+			mv_shared->longitude = _rcv_msg_gps_int.lon;
+			mv_shared->latitude = _rcv_msg_gps_int.lat;
 			break;
 		case MAVLINK_MSG_ID_GPS_RAW_INT:
 			mavlink_msg_gps_raw_int_decode(msg, &_rcv_msg_gps_raw_int);
+			mv_shared->longitude_raw = _rcv_msg_gps_raw_int.lon;
+			mv_shared->latitude_raw = _rcv_msg_gps_raw_int.lat;
 			break;
 		case MAVLINK_MSG_ID_COMMAND_ACK:
 			mavlink_msg_command_ack_decode(msg, &_rcv_cmd_ack);
