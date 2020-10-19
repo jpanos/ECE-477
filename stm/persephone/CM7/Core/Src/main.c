@@ -116,8 +116,34 @@ int main(void)
 
   /* Initialize all configured peripherals */
   /* USER CODE BEGIN 2 */
+	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOAEN;
 
-	mavlink_initialize();
+	GPIOA->MODER &= ~(GPIO_MODER_MODE8);
+	GPIOA->MODER |= GPIO_MODER_MODE8_1;
+	GPIOA->AFR[1] &= ~(0xf);
+	GPIOA->AFR[1] |= 1;
+	GPIOA->OTYPER |= GPIO_OTYPER_OT8;
+
+	RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;
+	TIM1->CR1 |= TIM_CR1_ARPE;
+	TIM1->CR1 &= ~(TIM_CR1_DIR);
+	TIM1->PSC = 32000 - 1;
+	TIM1->ARR = 40 -1;
+
+	TIM1->CCMR1 &= ~(TIM_CCMR1_CC1S); // set to output
+	TIM1->CCMR1 |= TIM_CCMR1_OC1PE; //
+	TIM1->CCMR1 &= ~(TIM_CCMR1_OC1M);
+	TIM1->CCMR1 |= 0x6 << TIM_CCMR1_OC1M_Pos;
+	TIM1->CCR1 = 6;
+	TIM1->CCER |= TIM_CCER_CC1E;
+	TIM1->BDTR |= TIM_BDTR_MOE;
+
+	TIM1->EGR |= TIM_EGR_UG;
+
+	TIM1->CR1 |= TIM_CR1_CEN;
+
+	TIM1->EGR |= TIM_EGR_UG;
+	// mavlink_initialize();
 	// set_mavlink_msg_interval(MAVLINK_MSG_ID_TRAJECTORY_REPRESENTATION_WAYPOINTS, 10000);
 
 	//  /* USER CODE END 2 */
