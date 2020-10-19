@@ -119,30 +119,29 @@ int main(void)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOAEN;
 
 	GPIOA->MODER &= ~(GPIO_MODER_MODE8);
-	GPIOA->MODER |= GPIO_MODER_MODE8_1;
+	GPIOA->MODER |= GPIO_MODER_MODE8_1; // set alternate function
 	GPIOA->AFR[1] &= ~(0xf);
-	GPIOA->AFR[1] |= 1;
-	GPIOA->OTYPER |= GPIO_OTYPER_OT8;
+	GPIOA->AFR[1] |= 1; // set tim1_ch1
+	GPIOA->OTYPER |= GPIO_OTYPER_OT8; // set open drain
 
 	RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;
-	TIM1->CR1 |= TIM_CR1_ARPE;
-	TIM1->CR1 &= ~(TIM_CR1_DIR);
+	TIM1->CR1 |= TIM_CR1_ARPE; // set auto reload preload
+	TIM1->CR1 &= ~(TIM_CR1_DIR); // set counter direction up
 	TIM1->PSC = 32000 - 1;
 	TIM1->ARR = 40 -1;
 
 	TIM1->CCMR1 &= ~(TIM_CCMR1_CC1S); // set to output
-	TIM1->CCMR1 |= TIM_CCMR1_OC1PE; //
+	TIM1->CCMR1 |= TIM_CCMR1_OC1PE; // preload enable (idk requried for pwm ref manual says)
 	TIM1->CCMR1 &= ~(TIM_CCMR1_OC1M);
-	TIM1->CCMR1 |= 0x6 << TIM_CCMR1_OC1M_Pos;
-	TIM1->CCR1 = 6;
-	TIM1->CCER |= TIM_CCER_CC1E;
-	TIM1->BDTR |= TIM_BDTR_MOE;
+	TIM1->CCMR1 |= 0x6 << TIM_CCMR1_OC1M_Pos; // pwm mode 1
+	TIM1->CCR1 = 6; // compare register for pwm (when counter is below this value, pwm signal is high)
+	TIM1->CCER |= TIM_CCER_CC1E; // enable channel 1 output
+	TIM1->BDTR |= TIM_BDTR_MOE; // enable master output
 
-	TIM1->EGR |= TIM_EGR_UG;
+	TIM1->EGR |= TIM_EGR_UG; //update generation so that all values are loaded into shadow registers
 
 	TIM1->CR1 |= TIM_CR1_CEN;
 
-	TIM1->EGR |= TIM_EGR_UG;
 	// mavlink_initialize();
 	// set_mavlink_msg_interval(MAVLINK_MSG_ID_TRAJECTORY_REPRESENTATION_WAYPOINTS, 10000);
 
