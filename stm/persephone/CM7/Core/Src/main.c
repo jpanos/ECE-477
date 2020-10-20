@@ -141,16 +141,13 @@ int main(void)
 
 	GPIOB->MODER &= ~(GPIO_MODER_MODE14); //LED3
 	GPIOB->MODER |= GPIO_MODER_MODE14_0;
-	GPIOB->MODER &= ~(GPIO_MODER_MODE9);
+	GPIOB->MODER &= ~(GPIO_MODER_MODE8); //Touch sensor input
 	//GPIOB->ODR 	|= GPIO_ODR_OD14;
 
 	//GPIO C
 
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN;
 	GPIOC->MODER &= ~(GPIO_MODER_MODE13);
-
-
-
 
 	//GPIO E
 
@@ -160,6 +157,16 @@ int main(void)
 	GPIOE->MODER |= GPIO_MODER_MODE1_0;
 	//GPIOE->ODR 	|= GPIO_ODR_OD1;
 
+	//GPIO F
+	//TIM17 CH1 OUTPUT ENABLE
+	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOFEN;
+	GPIOA->MODER &= ~(GPIO_MODER_MODE7);
+	GPIOA->MODER |= GPIO_MODER_MODE7_1;
+	GPIOA->AFR[1] &= ~(0xf);
+	GPIOA->AFR[1] |= 1;
+	GPIOA->OTYPER |= GPIO_OTYPER_OT7;
+
+	//TIM1
 
 	RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;
 	TIM1->CR1 |= TIM_CR1_ARPE; // set auto reload preload
@@ -179,6 +186,34 @@ int main(void)
 
 	TIM1->CR1 |= TIM_CR1_CEN;
 
+	//Config for MCO1
+
+	RCC->CFGR |= RCC_CFGR_MCO1_2;
+	RCC->CFGR |= (RCC_CFGR_MCO1PRE_3 | RCC_CFGR_MCO1PRE_2);
+
+
+
+	//TIM17 - Ch 1
+	RCC->APB2ENR |= RCC_APB2ENR_TIM17EN;
+	TIM17->CR1 |= TIM_CR1_ARPE;
+	TIM17->CR1 &= ~(TIM_CR1_DIR);
+
+	TIM17->PSC = (122 - 1); //using 4Mhz clk this should creat aprox 32.768khz
+	TIM17->ARR = 1;
+
+	TIM17->CCMR1 &= ~(TIM_CCMR1_CC1S);
+	TIM17->CCMR1 |= TIM_CCMR1_OC1PE;
+	TIM17->CCMR1 &= ~(TIM_CCMR1_OC1M);
+	TIM17->CCMR1 |= 0x1 << TIM_CCMR1_OC1M_Pos;
+
+	TIM17->CCR1 |= 50;
+
+	TIM17->TISEL |=	3; //Selecting MCO1 as the clk
+
+	TIM17->CCER |= TIM_CCER_CC1E;
+	TIM17->BDTR |= TIM_BDTR_MOE;
+	TIM17->EGR |= TIM_EGR_UG;
+	TIM17->CR1 |= TIM_CR1_CEN;
 
 
 	// mavlink_initialize();
@@ -200,7 +235,7 @@ int main(void)
 		/* USER CODE BEGIN 3 */
 
 		User_Button =  ((GPIOC->IDR &= GPIO_IDR_ID13) == (1 >> 13));
-		Touch_Button = ((GPIOB->IDR &= GPIO_IDR_ID9) == (1 >> 9));
+		Touch_Button = ((GPIOB->IDR &= GPIO_IDR_ID8) == (1 >> 8));
 		if(Touch_Button)
 		{
 			GPIOB->ODR 	&= (pin_state << 0);
@@ -231,7 +266,7 @@ int main(void)
 			pin_state2 = !pin_state2;
 			GPIOE->ODR 	|= (pin_state2 << 1);
 			HAL_Delay(5);
-			TIM1->CCR1 = 3; // compare register for pwm (when counter is below this value, pwm signal is high)
+			TIM1->CCR1 = 1; // compare register for pwm (when counter is below this value, pwm signal is high)
 		}
 
 
