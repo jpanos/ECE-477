@@ -160,11 +160,16 @@ int main(void)
 	//GPIO F
 	//TIM17 CH1 OUTPUT ENABLE
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOFEN;
-	GPIOF->MODER &= ~(GPIO_MODER_MODE7);
+	/*GPIOF->MODER &= ~(GPIO_MODER_MODE7);
 	GPIOF->MODER |= GPIO_MODER_MODE7_1;
 	GPIOF->AFR[1] &= ~(0xf);
 	GPIOF->AFR[1] |= 1;
-	GPIOF->OTYPER |= GPIO_OTYPER_OT7;
+	GPIOF->OTYPER |= GPIO_OTYPER_OT7;*/
+	GPIOF->MODER &= ~(GPIO_MODER_MODE7);
+	GPIOF->MODER |= GPIO_MODER_MODE7_1; // set alternate function
+	GPIOF->AFR[0] &= ~(0xf << 28);
+	GPIOF->AFR[0] |= 1 << 28; // set tim1_ch1
+	GPIOF->OTYPER |= GPIO_OTYPER_OT7; // set open drain
 
 	//TIM1
 
@@ -188,32 +193,29 @@ int main(void)
 
 	//Config for MCO1
 
-	RCC->CFGR |= RCC_CFGR_MCO1_2;
-	RCC->CFGR |= (RCC_CFGR_MCO1PRE_3 | RCC_CFGR_MCO1PRE_2);
+	//RCC->CFGR |= RCC_CFGR_MCO1_2;
+	//RCC->CFGR |= (RCC_CFGR_MCO1PRE_3 | RCC_CFGR_MCO1PRE_2);
 
 
-
-	//TIM17 - Ch 1
+	// Tim 17 stuff
 	RCC->APB2ENR |= RCC_APB2ENR_TIM17EN;
-	TIM17->CR1 |= TIM_CR1_ARPE;
-	TIM17->CR1 &= ~(TIM_CR1_DIR);
+	TIM17->CR1 |= TIM_CR1_ARPE; // set auto reload preload
+	TIM17->CR1 &= ~(TIM_CR1_DIR); // set counter direction up
+	TIM17->PSC = 1000 - 1;
+	TIM17->ARR = 2 -1;
 
-	TIM17->PSC = (122 - 1); //using 4Mhz clk this should creat aprox 32.768khz
-	TIM17->ARR = 1;
-
-	TIM17->CCMR1 &= ~(TIM_CCMR1_CC1S);
-	TIM17->CCMR1 |= TIM_CCMR1_OC1PE;
+	TIM17->CCMR1 &= ~(TIM_CCMR1_CC1S); // set to output
+	TIM17->CCMR1 |= TIM_CCMR1_OC1PE; // preload enable (idk requried for pwm ref manual says)
 	TIM17->CCMR1 &= ~(TIM_CCMR1_OC1M);
-	TIM17->CCMR1 |= 0x1 << TIM_CCMR1_OC1M_Pos;
+	TIM17->CCMR1 |= 0x6 << TIM_CCMR1_OC1M_Pos; // pwm mode 1
+	TIM17->CCR1 = 1; // compare register for pwm (when counter is below this value, pwm signal is high)
+	TIM17->CCER |= TIM_CCER_CC1E; // enable channel 1 output
+	TIM17->BDTR |= TIM_BDTR_MOE; // enable master output
 
-	TIM17->CCR1 |= 50;
+	TIM17->EGR |= TIM_EGR_UG; //update generation so that all values are loaded into shadow registers
 
-	TIM17->TISEL |=	3; //Selecting MCO1 as the clk
-
-	TIM17->CCER |= TIM_CCER_CC1E;
-	TIM17->BDTR |= TIM_BDTR_MOE;
-	TIM17->EGR |= TIM_EGR_UG;
 	TIM17->CR1 |= TIM_CR1_CEN;
+
 
 
 	// mavlink_initialize();
