@@ -6,12 +6,22 @@ mavlink_system_t mavlink_system = {
 		MAV_COMP_ID_ONBOARD_COMPUTER // Computer ID (a MAV_COMPONENT value)
 };
 
-volatile MavlinkSharedData * const mv_shared = (MavlinkSharedData *) MVPSSC_SHARED_SRAM_LOC;
+mavlink_system_t mavlink_autopilot = {
+		1,
+		1
+};
+
+// value is limited by max frequency of TIM6 timer interrupt generation
+// current max is 100Hz, min value is 2Hz as per spec by px4
+// will round down if not evenly divisible into 100
+void set_pos_freq(int freq) {
+	shared->pos_period = ((1 / freq) / 10);
+}
 
 ListNode * queue_message(mavlink_message_t * msg, uint32_t procID) {
 	ListNode * n;
 	spin_lock(HSEM_ID_EMPTY, procID);
-	n = dequeue(&mv_shared->empty_nodes);
+	n = dequeue(&shared->empty_nodes);
 	lock_release(HSEM_ID_EMPTY, procID);
 
 	if (n == NULL) return n;
@@ -22,7 +32,7 @@ ListNode * queue_message(mavlink_message_t * msg, uint32_t procID) {
 	msgdata->len = msg->len + 12;
 
 	spin_lock(HSEM_ID_MSGS, procID);
-	enqueue(&mv_shared->send_msgs, n);
+	enqueue(&shared->send_msgs, n);
 	lock_release(HSEM_ID_MSGS, procID);
 
 	return n;
@@ -30,19 +40,19 @@ ListNode * queue_message(mavlink_message_t * msg, uint32_t procID) {
 
 uint8_t send_command(uint32_t cmdid, mavlink_message_t * msg) {
 	ListNode * n = NULL;
-	mv_shared->cmd.done = MVPSSC_CMD_START;
+	shared->cmd.done = MVPSSC_CMD_START;
 
 	while (n == NULL) {
 	 n = queue_message(msg, 0);
 	}
-	mv_shared->cmd.node = n;
-	mv_shared->cmd.cmd_id = cmdid;
+	shared->cmd.node = n;
+	shared->cmd.cmd_id = cmdid;
 
-	while (mv_shared->cmd.done != MVPSSC_CMD_DONE) {}
+	while (shared->cmd.done != MVPSSC_CMD_DONE) {}
 
-	// mv_shared->cmd.node = NULL;
+	// shared->cmd.node = NULL;
 
-	return mv_shared->cmd.result;
+	return shared->cmd.result;
 }
 
 
@@ -105,8 +115,8 @@ uint8_t send_command_int(uint16_t command, uint8_t frame,
 			mavlink_system.sysid,
 			mavlink_system.compid,
 			&msg,
-			mavlink_system.sysid,
-			MAV_COMP_ID_AUTOPILOT1,
+			mavlink_autopilot.sysid,
+			mavlink_autopilot.compid,
 			frame,
 			command,
 			1, // current
@@ -115,3 +125,21 @@ uint8_t send_command_int(uint16_t command, uint8_t frame,
 	return send_command(command, &msg);
 }
 
+uint8_t send_command_long(uint16_t command,
+													float param1, float param2, float param3, float param4, float x, float y, float z) {
+	mavlink_message_t msg;
+	mavlink_msg_command_long_pack(
+			mavlink_systemid,
+			mavlink_system.compid,
+			&msg,
+			mavlink_autopilot.sysid,
+			mavlink_autopilot.compid,
+			command,
+			0,
+			param1, param2, param3, param4, x, y, z);
+	return send_command(command, &msg);
+}
+
+uint8_t takeoff(float meters) {
+
+}

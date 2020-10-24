@@ -143,9 +143,16 @@ int main(void)
 		send_ping_message();
 		if (prev_val == 0 && GPIOC->IDR != 0) {
 			GPIOB->ODR ^= GPIO_ODR_OD14;
+
+			float alt = shared->altitude_msl;
 			send_arm_disarm_message(1, 1);
 			send_command_int(MAV_CMD_NAV_TAKEOFF, MAV_FRAME_GLOBAL, 0, 0, 0, 0,
-												mv_shared->latitude_raw, mv_shared->longitude_raw, mv_shared->altitude_msl + 5);
+												shared->latitude, shared->longitude, alt + 2);
+			// send_command_int(MAV_CMD_NAV_TAKEOFF_LOCAL, MAV_FRAME_LOCAL_NED, 0, 0, 1, 0, 0, 0, -5);
+			while (shared->altitude_msl <= alt + 1.5) {}
+			// send_command_int(MAV_CMD_NAV_LAND_LOCAL, MAV_FRAME_LOCAL_NED, 0, .25, 1, 180, 0, 0, 0);
+			send_command_int(MAV_CMD_NAV_LAND, MAV_FRAME_GLOBAL, 0, PRECISION_LAND_MODE_DISABLED, 0, 0,
+												shared->latitude, shared->longitude, alt);
 		}
 		prev_val = GPIOC->IDR >> 8;
 		/* USER CODE BEGIN 3 */

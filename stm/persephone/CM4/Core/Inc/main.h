@@ -32,6 +32,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <shared.h>
 #include <mavlink_cm4.h>
 /* USER CODE END Includes */
 

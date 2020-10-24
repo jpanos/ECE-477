@@ -93,6 +93,7 @@ int main(void)
   // NVIC_SetPriority
   // NVIC_SetPriority();
 
+  shared_init();
   mavlink_initialize();
   /* USER CODE END Init */
 

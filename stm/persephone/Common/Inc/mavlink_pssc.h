@@ -14,31 +14,28 @@
 #include <stm32h7xx_hal.h>
 #include <common/mavlink.h>
 #include <spin_lock.h>
-#include <Queue.h>
+#include <queue.h>
 
 #define MVPSSC_SUCCESS 0
 #define MVPSSC_FAIL 1
 
 #define MVPSSC_MSG_BUFF_SIZE 5
 #define MVPSSC_MSG_MAX_SIZE 263
-#define MVPSSC_SHARED_SRAM_LOC 0x30040000
-
-#define HSEM_ID_EMPTY 15
-#define HSEM_ID_MSGS 16
-#define HSEM_ID_CMD 17
-#define HSEM_ID_CMD_BLOCK HSEM_ID_CMD
-
-#define DMA1_S0_PROC_ID 40
-#define TIM6_PROC_ID 41
-#define UART1_RX_PROC_ID 42
-#define CMD_BLOCK_PROC_ID 43
 
 #define MVPSSC_IS_CMD 1
 #define MVPSSC_IS_NOT_CMD 0
 #define MVPSSC_CMD_DONE 1
 #define MVPSSC_CMD_START 0
 
+#define MVPSCC_OFFBOARD_START 1
+#define	MVPSSC_OFFBOARD_STOP 0
+
+#define MVPSSC_POS_MODE_EN 0x1
+
+#define MVPSSC_POS_TYPE_MASK_IGNORE_ALL 0xfdff
+
 extern mavlink_system_t mavlink_system;
+extern mavlink_system_t mavlink_autopilot;
 
 typedef struct _msg_data {
 	uint8_t buff[MVPSSC_MSG_MAX_SIZE];
@@ -53,27 +50,13 @@ typedef struct _cmd_data {
 	uint8_t done;
 } CmdData;
 
-typedef struct _mavlink_shared_data {
-	ListNode nodes[MVPSSC_MSG_BUFF_SIZE];
-	MsgData msgs_data[MVPSSC_MSG_BUFF_SIZE];
-	Queue empty_nodes;
-	Queue send_msgs;
-	CmdData cmd;
-
-	float altitude_rel;
-	float altitude_msl;
-	int latitude_raw;
-	int longitude_raw;
-	int latitude;
-	int longitude;
-} MavlinkSharedData;
-
-extern volatile MavlinkSharedData * const mv_shared;
 
 ListNode * queue_message(mavlink_message_t * msg, uint32_t procID);
 
 // IMPORTANT: only meant to be called by main process in CM7
 uint8_t send_command(uint32_t cmdid, mavlink_message_t * msg);
+uint8_t send_command_int(uint16_t command, uint8_t frame,
+													float param1, float param2, float param3, float param4, int32_t x, int32_t y, float z);
 
 // will send a message to flight controller instructing it to send
 // the message_id specified at the interval specified
@@ -87,4 +70,8 @@ uint8_t send_ping_message(void);
 // force: 1 to force state, 0 to not
 uint8_t send_arm_disarm_message(uint8_t armval, uint8_t force);
 
+uint8_t takeoff(float meters) {
+
+}
+#include <shared.h>
 #endif /* INC_MAVLINK_PSSC_H_ */

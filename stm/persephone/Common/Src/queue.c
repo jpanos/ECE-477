@@ -4,7 +4,7 @@
  *  Created on: Oct 9, 2020
  *      Author: moiz
  */
-#include <Queue.h>
+#include <queue.h>
 
 uint8_t init_queue(Queue * q) {
 	q->tail = NULL;

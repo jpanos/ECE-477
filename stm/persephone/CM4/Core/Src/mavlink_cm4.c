@@ -16,6 +16,8 @@ mavlink_global_position_int_t _rcv_msg_gps_int;
 mavlink_gps_raw_int_t _rcv_msg_gps_raw_int;
 mavlink_altitude_t _rcv_msg_altitude;
 mavlink_ping_t _rcv_msg_ping;
+mavlink_command_int_t _rcv_cmd_int;
+mavlink_command_long_t _rcv_cmd_long;
 mavlink_command_ack_t _rcv_cmd_ack;
 
 // transmit structs
@@ -81,9 +83,8 @@ uint8_t _initialize_timers() {
 	// for heartbeat message
 
 	RCC->APB1LENR |= RCC_APB1LENR_TIM6EN;
-	// had to divide by 8 for M4 for some reason
 	TIM6->PSC = 64000 - 1;
-	TIM6->ARR = 50;
+	TIM6->ARR = 10;
 	TIM6->DIER |= TIM_DIER_UIE;
 	NVIC_EnableIRQ(TIM6_DAC_IRQn);
 	TIM6->CR1 |= TIM_CR1_CEN;
@@ -105,17 +106,21 @@ uint8_t _initialize_queue(Queue * q, ListNode * ll_buff, void * data_array,
 
 uint8_t mavlink_initialize(void) {
 	spin_lock(HSEM_ID_EMPTY, 0);
-	_initialize_queue(&mv_shared->empty_nodes, &mv_shared->nodes, &mv_shared->msgs_data,
+	_initialize_queue(&shared->empty_nodes, &shared->nodes, &shared->msgs_data,
 											MVPSSC_MSG_BUFF_SIZE, sizeof(MsgData));
 	lock_release(HSEM_ID_EMPTY, 0);
 
 	spin_lock(HSEM_ID_MSGS, 0);
-	init_queue(&mv_shared->send_msgs);
+	init_queue(&shared->send_msgs);
 	lock_release(HSEM_ID_MSGS, 0);
 
-	mv_shared->cmd.node = NULL;
-	mv_shared->latitude = -1;
-	mv_shared->longitude = -1;
+	shared->cmd.node = NULL;
+	shared->latitude = -1;
+	shared->longitude = -1;
+
+	// set position mask to ignore all
+	shared->pos_type_mask = MVPSSC_POS_TYPE_MASK_IGNORE_ALL;
+	shared->pos_mode |= MVPSSC_POS_MODE_EN;
 
 	_initialize_UART_DMA();
 	_heartbeat_msg_initialize();
@@ -131,7 +136,7 @@ uint8_t send_next_msg() {
 	DMA1->LIFCR |= DMA_LIFCR_CTCIF0 | DMA_LIFCR_CHTIF0 | DMA_LIFCR_CFEIF0 | DMA_LIFCR_CTEIF0;
 
 	ListNode * n;
-	n = mv_shared->send_msgs.head;
+	n = shared->send_msgs.head;
 
 	if (n == NULL) return MVPSSC_FAIL;
 
@@ -144,6 +149,32 @@ uint8_t send_next_msg() {
 	// enable DMA
   DMA1_Stream0->CR |= DMA_SxCR_EN;
   return MVPSSC_SUCCESS;
+}
+
+uint8_t _send_position_target() {
+	mavlink_message_t msg;
+	mavlink_msg_set_position_target_local_ned_pack(
+			mavlink_system.sysid,
+			mavlink_system.compid,
+			&msg,
+			shared->time_boot_ms,
+			mavlink_autopilot.sysid,
+			mavlink_autopilot.compid,
+			shared->pos_coord_frame,
+			shared->pos_type_mask,
+			shared->pos_set_x,
+			shared->pos_set_y,
+			shared->pos_set_z,
+			shared->pos_set_vx,
+			shared->pos_set_vy,
+			shared->pos_set_vz,
+			shared->pos_set_afx,
+			shared->pos_set_afy,
+			shared->pos_set_afz,
+			shared->pos_set_yaw,
+			shared->pos_set_yaw_rate);
+	if (queue_message(msg, TIM6_PROC_ID) != NULL) return MVPSSC_SUCCESS;
+	else return MVPSSC_FAIL;
 }
 
 int msg_buff_vals[30];
@@ -159,19 +190,19 @@ void put_val_in_buff(uint32_t val) {
 }
 
 void _cmd_cleanup() {
-		ListNode * n = mv_shared->cmd.node;
-		mv_shared->cmd.node = NULL;
+		ListNode * n = shared->cmd.node;
+		shared->cmd.node = NULL;
 
 		spin_lock(HSEM_ID_EMPTY, UART1_RX_PROC_ID);
-		enqueue(&mv_shared->empty_nodes, n);
+		enqueue(&shared->empty_nodes, n);
 		lock_release(HSEM_ID_EMPTY, UART1_RX_PROC_ID);
 
-		mv_shared->cmd.done = MVPSSC_CMD_DONE;
+		shared->cmd.done = MVPSSC_CMD_DONE;
 }
 
 void _handle_cmd_ack() {
-	mv_shared->cmd.result = _rcv_cmd_ack.result;
-	if (mv_shared->cmd.cmd_id == MAV_CMD_NAV_TAKEOFF) {
+	shared->cmd.result = _rcv_cmd_ack.result;
+	if (shared->cmd.cmd_id == MAV_CMD_NAV_TAKEOFF) {
 		int i = 0;
 	}
 
@@ -199,18 +230,24 @@ uint8_t parse_mavlink_message(mavlink_message_t *msg) {
 			break;
 		case MAVLINK_MSG_ID_ALTITUDE:
 			mavlink_msg_altitude_decode(msg, &_rcv_msg_altitude);
-			mv_shared->altitude_rel = _rcv_msg_altitude.altitude_relative;
-			mv_shared->altitude_msl = _rcv_msg_altitude.altitude_amsl;
+			shared->altitude_rel = _rcv_msg_altitude.altitude_relative;
+			shared->altitude_msl = _rcv_msg_altitude.altitude_amsl;
 			break;
 		case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
 			mavlink_msg_global_position_int_decode(msg, &_rcv_msg_gps_int);
-			mv_shared->longitude = _rcv_msg_gps_int.lon;
-			mv_shared->latitude = _rcv_msg_gps_int.lat;
+			shared->longitude = _rcv_msg_gps_int.lon;
+			shared->latitude = _rcv_msg_gps_int.lat;
 			break;
 		case MAVLINK_MSG_ID_GPS_RAW_INT:
 			mavlink_msg_gps_raw_int_decode(msg, &_rcv_msg_gps_raw_int);
-			mv_shared->longitude_raw = _rcv_msg_gps_raw_int.lon;
-			mv_shared->latitude_raw = _rcv_msg_gps_raw_int.lat;
+			shared->longitude_raw = _rcv_msg_gps_raw_int.lon;
+			shared->latitude_raw = _rcv_msg_gps_raw_int.lat;
+			break;
+		case MAVLINK_MSG_ID_COMMAND_INT:
+			mavlink_msg_command_int_decode(msg, &_rcv_cmd_int);
+			break;
+		case MAVLINK_MSG_ID_COMMAND_LONG:
+			mavlink_msg_command_long_decode(msg, &_rcv_cmd_long);
 			break;
 		case MAVLINK_MSG_ID_COMMAND_ACK:
 			mavlink_msg_command_ack_decode(msg, &_rcv_cmd_ack);
@@ -221,21 +258,28 @@ uint8_t parse_mavlink_message(mavlink_message_t *msg) {
 }
 
 uint8_t _tim6_hb_fire_count = 0;
+int _tim6_hb_secs = 0;
 void TIM6_DAC_IRQHandler() {
 	TIM6->SR &= ~TIM_SR_UIF; // Need to put clear flag up hear, or at least
 	// before on other instruction (not directly by bracket)
 	// otherwise NVIC will not register and IRQHandler will fire again.
 
+	// increment sys time by 50 ms
+	shared->time_boot_ms += 10;
+
 	// blink light
 	GPIOB->ODR ^= GPIO_ODR_OD14;
-	// send heartbeat message
-	_tim6_hb_fire_count++;
-	if (_tim6_hb_fire_count == 20) {
-		_tim6_hb_fire_count = 0;
+	// send heartbeat message at 1Hz
+	if (shared->time_boot_ms % 1000 == 0) {
 		queue_message(&_hb_msg, TIM6_PROC_ID);
 	}
 
-	if ((DMA1_Stream0->CR & 0x1) != 1) {
+	// send positional update at 4Hz
+	if ((shared->pos_mode & MVPSSC_POS_MODE_EN) && (shared->time_boot_ms % shared->pos_period == 0)) {
+		_send_position_target();
+	}
+
+	if (shared->time_boot_ms % 50 == 0 && ((DMA1_Stream0->CR & 0x1) != 1)) {
 		send_next_msg();
 	}
 
@@ -259,14 +303,14 @@ void DMA1_Stream0_IRQHandler() {
 		DMA1->LIFCR |= DMA_LIFCR_CTCIF0;
 		ListNode * n;
 		spin_lock(HSEM_ID_MSGS, DMA1_S0_PROC_ID);
-		n = dequeue(&mv_shared->send_msgs);
+		n = dequeue(&shared->send_msgs);
 		lock_release(HSEM_ID_MSGS, DMA1_S0_PROC_ID);
 
 		MsgData * msgdata = (MsgData *) n->data;
 
-		if (mv_shared->cmd.node != n) {
+		if (shared->cmd.node != n) {
 			spin_lock(HSEM_ID_EMPTY, DMA1_S0_PROC_ID);
-			enqueue(&mv_shared->empty_nodes, n);
+			enqueue(&shared->empty_nodes, n);
 			lock_release(HSEM_ID_EMPTY, DMA1_S0_PROC_ID);
 		}
 
