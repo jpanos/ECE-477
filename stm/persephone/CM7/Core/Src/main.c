@@ -140,20 +140,35 @@ int main(void)
 	while (1)
 	{
 		for (int i = 0; i <1000000; i++){}
-		send_ping_message();
+		// send_ping_message();
 		if (prev_val == 0 && GPIOC->IDR != 0) {
-			GPIOB->ODR ^= GPIO_ODR_OD14;
-
+//			GPIOB->ODR ^= GPIO_ODR_OD14;
+//
 			float alt = shared->altitude_msl;
-			send_arm_disarm_message(1, 1);
-			send_command_int(MAV_CMD_NAV_TAKEOFF, MAV_FRAME_GLOBAL, 0, 0, 0, 0,
-												shared->latitude, shared->longitude, alt + 2);
-			// send_command_int(MAV_CMD_NAV_TAKEOFF_LOCAL, MAV_FRAME_LOCAL_NED, 0, 0, 1, 0, 0, 0, -5);
-			while (shared->altitude_msl <= alt + 1.5) {}
-			// send_command_int(MAV_CMD_NAV_LAND_LOCAL, MAV_FRAME_LOCAL_NED, 0, .25, 1, 180, 0, 0, 0);
-			send_command_int(MAV_CMD_NAV_LAND, MAV_FRAME_GLOBAL, 0, PRECISION_LAND_MODE_DISABLED, 0, 0,
-												shared->latitude, shared->longitude, alt);
+//			send_arm_disarm_message(1, 1);
+//			send_command_int(MAV_CMD_NAV_TAKEOFF, MAV_FRAME_GLOBAL, 0, 0, 0, 0,
+//												shared->latitude, shared->longitude, alt + 2);
+//			// send_command_int(MAV_CMD_NAV_TAKEOFF_LOCAL, MAV_FRAME_LOCAL_NED, 0, 0, 1, 0, 0, 0, -5);
+//			while (shared->altitude_msl <= alt + 1.5) {}
+//			// send_command_int(MAV_CMD_NAV_LAND_LOCAL, MAV_FRAME_LOCAL_NED, 0, .25, 1, 180, 0, 0, 0);
+//			send_command_int(mav_cmd_nav_land, mav_frame_global, 0, precision_land_mode_disabled, 0, 0,
+//												shared->latitude, shared->longitude, alt);
+			// send_command_long(MAV_CMD_DO_MOTOR_TEST, 1, MOTOR_TEST_THROTTLE_PERCENT, 20, 4, 1, MOTOR_TEST_ORDER_SEQUENCE, 0);
+			// send_command_int(MAV_CMD_DO_MOTOR_TEST, MAV_FRAME_GLOBAL, 1, MOTOR_TEST_THROTTLE_PERCENT, 20, 4, 1,
+			//										MOTOR_TEST_ORDER_SEQUENCE, 0);
+			send_command_long(MAV_CMD_NAV_GUIDED_ENABLE, 0, 0, 0, 0, 0, 0, 0);
+			send_arm_disarm_message(1, 0);
+			// set setpoint 5 meters up
+			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_TAKEOFF, 0, 0, -1.5, 0, 0, -.5, 0, 0, 0, 0, 0);
+			while (shared->altitude_msl <= alt + 1.5) {
+				if (shared->landed_state == MAV_LANDED_STATE_ON_GROUND) goto out;
+			}
+			msleep(1000);
+			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_LANDING, 0, 0, 1.5, 0, 0, .5, 0, 0, 0, 0, 0);
+			while (shared->landed_state != MAV_LANDED_STATE_ON_GROUND);
+			send_arm_disarm_message(0, 0);
 		}
+out:
 		prev_val = GPIOC->IDR >> 8;
 		/* USER CODE BEGIN 3 */
   }

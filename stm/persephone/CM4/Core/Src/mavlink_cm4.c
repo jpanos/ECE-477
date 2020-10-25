@@ -16,6 +16,7 @@ mavlink_global_position_int_t _rcv_msg_gps_int;
 mavlink_gps_raw_int_t _rcv_msg_gps_raw_int;
 mavlink_altitude_t _rcv_msg_altitude;
 mavlink_ping_t _rcv_msg_ping;
+mavlink_extended_sys_state_t _rcv_extended_sys_state;
 mavlink_command_int_t _rcv_cmd_int;
 mavlink_command_long_t _rcv_cmd_long;
 mavlink_command_ack_t _rcv_cmd_ack;
@@ -119,8 +120,9 @@ uint8_t mavlink_initialize(void) {
 	shared->longitude = -1;
 
 	// set position mask to ignore all
-	shared->pos_type_mask = MVPSSC_POS_TYPE_MASK_IGNORE_ALL;
+	shared->pos_type_mask = MVPSSC_POS_MASK_IGNORE_ALL;
 	shared->pos_mode |= MVPSSC_POS_MODE_EN;
+	set_pos_freq(4);
 
 	_initialize_UART_DMA();
 	_heartbeat_msg_initialize();
@@ -153,6 +155,7 @@ uint8_t send_next_msg() {
 
 uint8_t _send_position_target() {
 	mavlink_message_t msg;
+	spin_lock(HSEM_ID_POS_SETPOINT, TIM6_PROC_ID);
 	mavlink_msg_set_position_target_local_ned_pack(
 			mavlink_system.sysid,
 			mavlink_system.compid,
@@ -173,7 +176,8 @@ uint8_t _send_position_target() {
 			shared->pos_set_afz,
 			shared->pos_set_yaw,
 			shared->pos_set_yaw_rate);
-	if (queue_message(msg, TIM6_PROC_ID) != NULL) return MVPSSC_SUCCESS;
+	lock_release(HSEM_ID_POS_SETPOINT, TIM6_PROC_ID);
+	if (queue_message(&msg, TIM6_PROC_ID) != NULL) return MVPSSC_SUCCESS;
 	else return MVPSSC_FAIL;
 }
 
@@ -227,6 +231,10 @@ uint8_t parse_mavlink_message(mavlink_message_t *msg) {
 			break;
 		case MAVLINK_MSG_ID_PING:
 			mavlink_msg_ping_decode(msg, &_rcv_msg_ping);
+			break;
+		case MAVLINK_MSG_ID_EXTENDED_SYS_STATE:
+			mavlink_msg_extended_sys_state_decode(msg, &_rcv_extended_sys_state);
+			shared->landed_state = _rcv_extended_sys_state.landed_state;
 			break;
 		case MAVLINK_MSG_ID_ALTITUDE:
 			mavlink_msg_altitude_decode(msg, &_rcv_msg_altitude);

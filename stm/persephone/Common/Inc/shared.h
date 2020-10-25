@@ -19,6 +19,7 @@
 #define HSEM_ID_CMD 17
 #define HSEM_ID_CMD_BLOCK HSEM_ID_CMD
 #define HSEM_ID_START_OFFBOARD_FLAG 18
+#define HSEM_ID_POS_SETPOINT 19
 
 // shared data process IDs
 #define DMA1_S0_PROC_ID 40
@@ -34,6 +35,8 @@ typedef struct _mavlink_shared_data {
 //////////////SYSTEM DATA END///////////////////////
 
 //////////////MAVLINK SHARED DATA START/////////////////////
+	uint8_t landed_state;
+
 	ListNode nodes[MVPSSC_MSG_BUFF_SIZE];
 	MsgData msgs_data[MVPSSC_MSG_BUFF_SIZE];
 	Queue empty_nodes;

@@ -15,7 +15,8 @@ mavlink_system_t mavlink_autopilot = {
 // current max is 100Hz, min value is 2Hz as per spec by px4
 // will round down if not evenly divisible into 100
 void set_pos_freq(int freq) {
-	shared->pos_period = ((1 / freq) / 10);
+	int period = 1000 / freq;
+	shared->pos_period = period - period % 10;
 }
 
 ListNode * queue_message(mavlink_message_t * msg, uint32_t procID) {
@@ -91,21 +92,7 @@ uint8_t send_arm_disarm_message(uint8_t arm, uint8_t force) {
 	if (force) forceval = 21196;
 	if (arm) armval = 1;
 
-	mavlink_message_t msg;
-	mavlink_msg_command_int_pack(
-			mavlink_system.sysid,
-			mavlink_system.compid,
-			&msg,
-			mavlink_system.sysid,
-			MAV_COMP_ID_AUTOPILOT1,
-			MAV_FRAME_MISSION,
-			MAV_CMD_COMPONENT_ARM_DISARM,
-			1,
-			1,
-			armval, //arm
-			forceval, //force
-			0, 0, 0, 0, 0);
-	return send_command(MAV_CMD_COMPONENT_ARM_DISARM, &msg);
+	return send_command_long(MAV_CMD_COMPONENT_ARM_DISARM, armval, forceval, 0, 0, 0, 0, 0);
 }
 
 uint8_t send_command_int(uint16_t command, uint8_t frame,
@@ -126,20 +113,39 @@ uint8_t send_command_int(uint16_t command, uint8_t frame,
 }
 
 uint8_t send_command_long(uint16_t command,
-													float param1, float param2, float param3, float param4, float x, float y, float z) {
+													float param1, float param2, float param3, float param4, float param5, float param6, float param7) {
 	mavlink_message_t msg;
 	mavlink_msg_command_long_pack(
-			mavlink_systemid,
+			mavlink_system.sysid,
 			mavlink_system.compid,
 			&msg,
 			mavlink_autopilot.sysid,
 			mavlink_autopilot.compid,
 			command,
 			0,
-			param1, param2, param3, param4, x, y, z);
+			param1, param2, param3, param4, param5, param6, param7);
 	return send_command(command, &msg);
 }
 
-uint8_t takeoff(float meters) {
+uint8_t set_pos_setpoint(uint32_t procID, uint8_t frame, uint16_t mask,
+		float x, float y, float z, float vx, float vy, float vz, float afx, float afy, float afz, float yaw, float rate) {
+	spin_lock(HSEM_ID_POS_SETPOINT, procID);
+	shared->pos_coord_frame = frame;
+	shared->pos_type_mask = mask;
+	shared->pos_set_x = x;
+	shared->pos_set_y = y;
+	shared->pos_set_z = z;
+	shared->pos_set_vx = vx;
+	shared->pos_set_vy = vy;
+	shared->pos_set_vz = vz;
+	shared->pos_set_afx = afx;
+	shared->pos_set_afy = afy;
+	shared->pos_set_afz = afz;
+	shared->pos_set_yaw = yaw;
+	shared->pos_set_yaw_rate = rate;
+	lock_release(HSEM_ID_POS_SETPOINT, procID);
+}
 
+uint8_t takeoff(float meters) {
+	return 0;
 }

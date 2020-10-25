@@ -32,7 +32,9 @@
 
 #define MVPSSC_POS_MODE_EN 0x1
 
-#define MVPSSC_POS_TYPE_MASK_IGNORE_ALL 0xfdff
+#define MVPSSC_POS_MASK_IGNORE_ALL 0x0dff
+#define MVPSSC_POS_MASK_TAKEOFF 0x1ddb
+#define MVPSSC_POS_MASK_LANDING 0x2ddb
 
 extern mavlink_system_t mavlink_system;
 extern mavlink_system_t mavlink_autopilot;
@@ -50,6 +52,7 @@ typedef struct _cmd_data {
 	uint8_t done;
 } CmdData;
 
+void set_pos_freq(int freq);
 
 ListNode * queue_message(mavlink_message_t * msg, uint32_t procID);
 
@@ -57,6 +60,8 @@ ListNode * queue_message(mavlink_message_t * msg, uint32_t procID);
 uint8_t send_command(uint32_t cmdid, mavlink_message_t * msg);
 uint8_t send_command_int(uint16_t command, uint8_t frame,
 													float param1, float param2, float param3, float param4, int32_t x, int32_t y, float z);
+uint8_t send_command_long(uint16_t command,
+													float param1, float param2, float param3, float param4, float param5, float param6, float param7);
 
 // will send a message to flight controller instructing it to send
 // the message_id specified at the interval specified
@@ -70,8 +75,10 @@ uint8_t send_ping_message(void);
 // force: 1 to force state, 0 to not
 uint8_t send_arm_disarm_message(uint8_t armval, uint8_t force);
 
-uint8_t takeoff(float meters) {
+uint8_t set_pos_setpoint(uint32_t procID, uint8_t frame, uint16_t mask,
+		float x, float y, float z, float vx, float vy, float vz, float afx, float afy, float afz, float yaw, float rate);
 
-}
+uint8_t takeoff(float meters);
+
 #include <shared.h>
 #endif /* INC_MAVLINK_PSSC_H_ */
