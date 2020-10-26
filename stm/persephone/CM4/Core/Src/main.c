@@ -46,8 +46,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-	uint32_t bqAddr = 0x20; // battery monitor address
-	uint8_t Size = 1; // set the size to 1 byte for now
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/

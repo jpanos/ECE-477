@@ -1,6 +1,7 @@
 #include "i2c_battery.h"
 
-void initI2C(void){
+
+void initI2C2(void){
 	// This function initializes I2C
 	uint32_t OwnAddr = 0x52; // decide own address
 	//Enable I2C clock and select sysclock as clock source
@@ -18,8 +19,8 @@ void initI2C(void){
 	I2C2->TIMINGR = 0; // clear timing reg
 	I2C2->TIMINGR &= ~I2C_TIMINGR_PRESC; //clear presc
 	I2C2->TIMINGR |= 9<<28; // set presc to 9 (now clock is 400 kHz)
-	I2C2->TIMINGR |= 10; // set SCLL to 5
-	I2C2->TIMINGR |= 12<<8; // set SCLH to 5
+	I2C2->TIMINGR |= 32; // set SCLL to 5
+	I2C2->TIMINGR |= 26<<8; // set SCLH to 5
 	I2C2->TIMINGR |= 0x2<<16; // set SDADEL to table value
 	I2C2->TIMINGR |= 0x4<<20; // set scaldel to table value
 
@@ -32,10 +33,14 @@ void initI2C(void){
 	I2C2->CR2 &= ~ I2C_CR2_ADD10; // do 7 bit addressing
 	I2C2->CR2 |= I2C_CR2_AUTOEND; // en autoend
 	I2C2->CR1 |= I2C_CR1_PE; // enable peripheral
-	/*
-	//Enable I2C clock and select sysclock as clock source
+} // end initI2C
+
+void initI2C1(void) {  // configures i2c1 as the slave (pg 2136 of ref manual)
+//Enable I2C clock and select sysclock as clock source
+	uint32_t slaveOwnAddr = 0x30; // set the slave address
+	//NVIC_EnableIRQ(I2C1_EV_IRQn);  // enable I2C1 event interrupt
+
 	RCC->APB1LENR |= RCC_APB1LENR_I2C1EN;
-	RCC-> D2CCIP2R |= 0x3<<12; // set clock to CSI clock ~ 4 MHz(Pg 447 ref manual)
 
 	//I2C CR1 config
 	I2C1->CR1 &= ~I2C_CR1_PE;
@@ -44,26 +49,28 @@ void initI2C(void){
 	I2C1->CR1 |= I2C_CR1_ERRIE; // allow error interrupts
 	I2C1->CR1 &= ~ I2C_CR1_NOSTRETCH; // allow clock stretching
 
+	I2C1->CR1 |= I2C_CR1_ADDRIE; // enable slave address match interrupt
+
 	// Timing config
 	I2C1->TIMINGR = 0; // clear timing reg
 	I2C1->TIMINGR &= ~I2C_TIMINGR_PRESC; //clear presc
 	I2C1->TIMINGR |= 9<<28; // set presc to 9 (now clock is 400 kHz)
-	I2C1->TIMINGR |= 200; // set SCLL to 5
-	I2C1->TIMINGR |= 200<<8; // set SCLH to 5
+	I2C1->TIMINGR |= 32; // set SCLL to 5
+	I2C1->TIMINGR |= 26<<8; // set SCLH to 5
 	I2C1->TIMINGR |= 0x2<<16; // set SDADEL to table value
 	I2C1->TIMINGR |= 0x4<<20; // set scaldel to table value
 
 	// set i2c own address register
 	I2C1->OAR1 &= ~I2C_OAR1_OA1EN;
-	I2C1->OAR1 |= I2C_OAR1_OA1EN|OwnAddr; // set the own address
+	I2C1->OAR1 |= I2C_OAR1_OA1EN|(slaveOwnAddr<<1); // set the own address
 	I2C1->OAR2 &=~I2C_OAR2_OA2EN; // disable oar 2
 
 	// i2c cr2 config
 	I2C1->CR2 &= ~ I2C_CR2_ADD10; // do 7 bit addressing
 	I2C1->CR2 |= I2C_CR2_AUTOEND; // en autoend
 	I2C1->CR1 |= I2C_CR1_PE; // enable peripheral
-	*/
-} // end initI2C
+}
+
 
 void I2C2GPIOINIT(void){
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOBEN; // enable clock to gpiob
@@ -94,6 +101,46 @@ void I2C_StartTX(I2C_TypeDef* I2C, uint32_t DevAddress, uint8_t Size, uint8_t Di
 	}
 	I2C->CR2 |= DevAddress <<1;
 	I2C->CR2 |= Size<<16;
-	I2C->CR2 |= I2C_CR2_START; // send start bit
+
+	// PROCESS: sends start bit, starts clock, sends 7 bit address, holds low for for write/goes high for read,
+	// waits for slave ack (pull down line after w/r bit), and then low
+}
+
+/*
+int I2C_getCellVoltaddr(char cellnum) // get address for reading cell voltage
+{   // cellnum: 0, 1 , 2, 3, 4, 5, b
+	// returns the concatenated hi addr and lo addr
+	int addr;
+	switch(cellnum) {
+		case '1': // address for VC1 lo and hi
+			addr = (0x0C<<2) + 0x0D; // high is shifted, low is not
+			break;
+		case '2': // VC2
+			addr = (0x0E<<2) + 0x0F;
+			break;
+		case '3':
+			addr = (0x10<<2) + 0x11;
+			break;
+		case '4':
+			addr = (0x12<<2) + 0x13;
+			break;
+		case '5':
+			addr = (0x14<<2) + 0x15;
+			break;
+		case 'b':
+			addr = (0x2A<<2) + 0x2B;
+			break;
+		default:
+			addr = 0xFFFF; // erroraddr
+	}
+	return addr;
+} // end I2C_getCellVoltaddr */
+
+void I2CreadfromBatt(int addr) { // todo: add to header file
+	// This function configures i2c to read from the battery monitor
+	// read reg is register name to read
+	uint32_t bqAddr = 0x08;
+	int Size = 1; // read one byte from register TODO: should siz be data size + 1 for the reg address
+	I2C_StartTX(I2C2,  bqAddr, Size, MASTERREAD);
 }
 /* USER CODE END 0 */

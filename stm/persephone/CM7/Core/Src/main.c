@@ -19,7 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+#include "i2c_battery.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -32,7 +32,17 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define MASTERWRITE 0
+#define MASTERREAD  1
+#define SYS_STAT 0x00
+#define VC1_HI 0x0C
+#define VC1_LO 0x0D
+#define VC2_HI 0x0E
+#define VC2_LO 0x0F
+#define VC3_HI 0x10
+#define VC3_LO 0x11
+#define VC4_HI 0x12
+#define VC4_LO 0x13
 #define HSEM_ID_0 (0U) /* HW semaphore 0*/
 /* USER CODE END PD */
 
@@ -44,7 +54,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+	int slaverxdata = 0; // create a global receive data variable
+	int masterrxdata = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -55,6 +66,45 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void I2C1_EV_IRQHandler(void) { // I2C1 recieve interrupt handler
+	uint32_t I2C_interrupt_status = I2C1->ISR; // get flags
+	if ((I2C_interrupt_status & I2C_ISR_ADDR) == I2C_ISR_ADDR ) // address detected {
+	{
+		I2C1->ICR |= I2C_ICR_ADDRCF; // clear flag
+
+		if ((I2C_interrupt_status & I2C_ISR_DIR) == I2C_ISR_DIR) {
+			// Check transfer direction, enter loop if master is requesting a read (ie: slave is transmitter)
+			I2C1->CR1|= I2C_CR1_TXIE; // enable transmit interrupt
+		}
+		// enable RX interrupt here
+		else {
+			I2C1->CR1|= I2C_CR1_RXIE; // enable recieve interrupt
+		}
+	}
+	else if ((I2C_interrupt_status & I2C_ISR_TXIS) == I2C_ISR_TXIS){
+		// check if transmit data register is empty
+		I2C1->CR1 &= ~I2C_CR1_TXIE; // Disable the transmit interrupt
+		uint8_t data = 0xCC; //random data byte to send
+		I2C1->TXDR = data; // byte to send
+	}
+	else if ((I2C_interrupt_status & I2C_ISR_RXNE) == I2C_ISR_RXNE){
+		I2C1->CR1 &= ~I2C_CR1_RXIE; // disable receive interrupt
+		slaverxdata = I2C1->RXDR; // read the data
+	}
+}
+
+void I2C2_EV_IRQHandler(void) { // I2C2 interrupt handler
+	if((I2C2->ISR & I2C_ISR_TXE) == I2C_ISR_TXE){ // need to transmit??
+		uint8_t data = 0xDD;
+		I2C2->TXDR = data;
+		uint32_t slaveaddr = 0x30; // battery monitor address
+		uint8_t Size = 1; // set the size to 1 byte for now
+		I2C_StartTX(I2C2,  slaveaddr, Size, MASTERWRITE);
+	}
+	else if((I2C2->ISR & I2C_ISR_RXNE)==I2C_ISR_RXNE){ // is reciever not empty
+		masterrxdata = I2C2->RXDR; // read th recieved data
+	}
+}
 
 /* USER CODE END 0 */
 
@@ -117,21 +167,16 @@ int main(void)
   /* Initialize all configured peripherals */
   /* USER CODE BEGIN 2 */
 
-	// mavlink_initialize();
-
-	// initialize push button stuff
-	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN;
-	GPIOC->MODER &= ~(0xc000000);
-	GPIOB->ODR ^= GPIO_ODR_OD14;
-
-	// put yellow led in output mode
-	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOEEN;
-	GPIOE->MODER &= ~(GPIO_MODER_MODE1);
-	GPIOE->MODER |= GPIO_MODER_MODE1_0;
-	GPIOE->ODR &= ~GPIO_ODR_OD1;
-	// set_mavlink_msg_interval(MAVLINK_MSG_ID_PING, 10000);
-	//send_ping_message();
-	// set_mavlink_msg_interval(MAVLINK_MSG_ID_GLOBAL_POSITION_INT, 10000);
+	mavlink_initialize();
+	//uint32_t bqAddr = 0x08; // battery monitor address
+	uint8_t Size = 2; // set the size to 1 byte for now
+	// uncommented interrupt enable
+	initI2C2(); 				// init i2c2
+	I2C2GPIOINIT();
+	initI2C1();
+	I2C1GPIOINIT();
+	I2C_StartTX(I2C2,  0x30, Size, MASTERWRITE);
+	I2C2->CR2 |= I2C_CR2_START; // send start bit
 	// set_mavlink_msg_interval(MAVLINK_MSG_ID_TRAJECTORY_REPRESENTATION_WAYPOINTS, 10000);
 	// spin_lock_core(HSEM_ID_CMD_BLOCK, 4, CMD_BLOCK_PROC_ID);
 
