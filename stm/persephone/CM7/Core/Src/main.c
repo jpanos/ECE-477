@@ -268,7 +268,7 @@ int main(void)
 			pin_state2 = !pin_state2;
 			GPIOE->ODR 	|= (pin_state2 << 1);
 			HAL_Delay(5);
-			TIM1->CCR1 = 1; // compare register for pwm (when counter is below this value, pwm signal is high)
+			TIM1->CCR1 = 5; // compare register for pwm (when counter is below this value, pwm signal is high)
 		}
 
 
