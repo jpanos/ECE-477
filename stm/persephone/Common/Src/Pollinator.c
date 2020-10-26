@@ -12,9 +12,14 @@
 	static unsigned short Touch_Button = 0;
 	int angle; //1 means neg 45 degree  3 means 45 degree
 
-
-
-void init_TIM(int angle)
+int check_sense(void){
+	Touch_Button = ((GPIOB->IDR &= GPIO_IDR_ID8) == (1 >> 8));
+	return Touch_Button;
+}
+void set_angle(int angle){
+	TIM1->CCR1 = angle;
+}
+void init_TIM(void)
 {
 
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOAEN;
@@ -45,18 +50,6 @@ void init_TIM(int angle)
 	TIM1->EGR |= TIM_EGR_UG; //update generation so that all values are loaded into shadow registers
 
 	TIM1->CR1 |= TIM_CR1_CEN;
-
-
-		Touch_Button = ((GPIOB->IDR &= GPIO_IDR_ID8) == (1 >> 8));
-		if(Touch_Button)
-		{
-			TIM1->CCR1 = 2;
-		}
-		else
-		{
-			TIM1->CCR1 = angle;
-		}
-
 
 
 }

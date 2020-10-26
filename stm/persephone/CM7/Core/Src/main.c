@@ -125,16 +125,25 @@ int main(void)
 	//  /* USER CODE END 2 */
 	int angle = 3;
 
-	void init_GPIO(void);
-	void init_TIM(angle);
+	void init_TIM(void);
 
+	static unsigned short Touch_Button = 0;
+	int start = 2;
 
 	//  /* Infinite loop */
 	//  /* USER CODE BEGIN WHILE */
 	while (1)
 	{
-
 		/* USER CODE BEGIN 3 */
+		Touch_Button = check_sense;
+		if(Touch_Button)
+		{
+			void set_angle(start);
+		}
+		else
+		{
+			void set_angle(angle);
+		}
   }
   /* USER CODE END 3 */
 }
