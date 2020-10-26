@@ -6,6 +6,28 @@
   */
 
 #include "main.h"
+#include "Pollinator.h"
+
+
+	static unsigned short Touch_Button = 0;
+	int angle; //1 means neg 45 degree  3 means 45 degree
+
+
+void init_GPIO(void){
+	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOAEN;
+
+	GPIOA->MODER &= ~(GPIO_MODER_MODE8);
+	GPIOA->MODER |= GPIO_MODER_MODE8_1; // set alternate function
+	GPIOA->AFR[1] &= ~(0xf);
+	GPIOA->AFR[1] |= 1; // set tim1_ch1
+	GPIOA->OTYPER |= GPIO_OTYPER_OT8; // set open drain
+
+	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOBEN;
+	GPIOB->MODER &= ~(GPIO_MODER_MODE8); //Touch sensor input
+}
+
+void init_TIM(int angle)
+{
 
 	RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;
 	TIM1->CR1 |= TIM_CR1_ARPE; // set auto reload preload
@@ -24,25 +46,6 @@
 	TIM1->EGR |= TIM_EGR_UG; //update generation so that all values are loaded into shadow registers
 
 	TIM1->CR1 |= TIM_CR1_CEN;
-
-
-	static unsigned short Touch_Button = 0;
-
-	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOAEN;
-
-	GPIOA->MODER &= ~(GPIO_MODER_MODE8);
-	GPIOA->MODER |= GPIO_MODER_MODE8_1; // set alternate function
-	GPIOA->AFR[1] &= ~(0xf);
-	GPIOA->AFR[1] |= 1; // set tim1_ch1
-	GPIOA->OTYPER |= GPIO_OTYPER_OT8; // set open drain
-
-	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOBEN;
-	GPIOB->MODER &= ~(GPIO_MODER_MODE8); //Touch sensor input
-
-	int angle; //1 means neg 45 degree  3 means 45 degree
-
-
-void init_TIM(int angle){
 
 	while(1){
 

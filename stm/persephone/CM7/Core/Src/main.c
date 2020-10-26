@@ -19,6 +19,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "Pollinator.h"
+
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -117,116 +119,14 @@ int main(void)
   /* Initialize all configured peripherals */
   /* USER CODE BEGIN 2 */
 
-
-	static unsigned short User_Button = 0;
-	static unsigned short Touch_Button = 0;
-
-
-	//Initialize GPIO Pins
-	//GPIO A
-	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOAEN;
-
-	GPIOA->MODER &= ~(GPIO_MODER_MODE8);
-	GPIOA->MODER |= GPIO_MODER_MODE8_1; // set alternate function
-	GPIOA->AFR[1] &= ~(0xf);
-	GPIOA->AFR[1] |= 1; // set tim1_ch1
-	GPIOA->OTYPER |= GPIO_OTYPER_OT8; // set open drain
-
-	//GPIO B
-
-	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOBEN;
-
-	GPIOB->MODER &= ~(GPIO_MODER_MODE0); //LED1
-	GPIOB->MODER |= GPIO_MODER_MODE0_0;
-
-	GPIOB->MODER &= ~(GPIO_MODER_MODE14); //LED3
-	GPIOB->MODER |= GPIO_MODER_MODE14_0;
-	GPIOB->MODER &= ~(GPIO_MODER_MODE8); //Touch sensor input
-	//GPIOB->ODR 	|= GPIO_ODR_OD14;
-
-	//GPIO C
-
-	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN;
-	GPIOC->MODER &= ~(GPIO_MODER_MODE13);
-
-	//GPIO E
-
-	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOEEN;
-
-	GPIOE->MODER &= ~(GPIO_MODER_MODE1); //LED 3
-	GPIOE->MODER |= GPIO_MODER_MODE1_0;
-	//GPIOE->ODR 	|= GPIO_ODR_OD1;
-
-	//GPIO F
-	//TIM17 CH1 OUTPUT ENABLE
-	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOFEN;
-	/*GPIOF->MODER &= ~(GPIO_MODER_MODE7);
-	GPIOF->MODER |= GPIO_MODER_MODE7_1;
-	GPIOF->AFR[1] &= ~(0xf);
-	GPIOF->AFR[1] |= 1;
-	GPIOF->OTYPER |= GPIO_OTYPER_OT7;*/
-	GPIOF->MODER &= ~(GPIO_MODER_MODE7);
-	GPIOF->MODER |= GPIO_MODER_MODE7_1; // set alternate function
-	GPIOF->AFR[0] &= ~(0xf << 28);
-	GPIOF->AFR[0] |= 1 << 28; // set tim1_ch1
-	GPIOF->OTYPER |= GPIO_OTYPER_OT7; // set open drain
-
-	//TIM1
-
-	RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;
-	TIM1->CR1 |= TIM_CR1_ARPE; // set auto reload preload
-	TIM1->CR1 &= ~(TIM_CR1_DIR); // set counter direction up
-	TIM1->PSC = 32000 - 1;
-	TIM1->ARR = 40 -1;
-
-	TIM1->CCMR1 &= ~(TIM_CCMR1_CC1S); // set to output
-	TIM1->CCMR1 |= TIM_CCMR1_OC1PE; // preload enable (idk requried for pwm ref manual says)
-	TIM1->CCMR1 &= ~(TIM_CCMR1_OC1M);
-	TIM1->CCMR1 |= 0x6 << TIM_CCMR1_OC1M_Pos; // pwm mode 1
-
-	TIM1->CCER |= TIM_CCER_CC1E; // enable channel 1 output
-	TIM1->BDTR |= TIM_BDTR_MOE; // enable master output
-
-	TIM1->EGR |= TIM_EGR_UG; //update generation so that all values are loaded into shadow registers
-
-	TIM1->CR1 |= TIM_CR1_CEN;
-
-	//Config for MCO1
-
-	//RCC->CFGR |= RCC_CFGR_MCO1_2;
-	//RCC->CFGR |= (RCC_CFGR_MCO1PRE_3 | RCC_CFGR_MCO1PRE_2);
-
-
-	// Tim 17 stuff
-	RCC->APB2ENR |= RCC_APB2ENR_TIM17EN;
-	TIM17->CR1 |= TIM_CR1_ARPE; // set auto reload preload
-	TIM17->CR1 &= ~(TIM_CR1_DIR); // set counter direction up
-	TIM17->PSC = 1000 - 1;
-	TIM17->ARR = 2 -1;
-
-	TIM17->CCMR1 &= ~(TIM_CCMR1_CC1S); // set to output
-	TIM17->CCMR1 |= TIM_CCMR1_OC1PE; // preload enable (idk requried for pwm ref manual says)
-	TIM17->CCMR1 &= ~(TIM_CCMR1_OC1M);
-	TIM17->CCMR1 |= 0x6 << TIM_CCMR1_OC1M_Pos; // pwm mode 1
-	TIM17->CCR1 = 1; // compare register for pwm (when counter is below this value, pwm signal is high)
-	TIM17->CCER |= TIM_CCER_CC1E; // enable channel 1 output
-	TIM17->BDTR |= TIM_BDTR_MOE; // enable master output
-
-	TIM17->EGR |= TIM_EGR_UG; //update generation so that all values are loaded into shadow registers
-
-	TIM17->CR1 |= TIM_CR1_CEN;
-
-
-
 	// mavlink_initialize();
 	// set_mavlink_msg_interval(MAVLINK_MSG_ID_TRAJECTORY_REPRESENTATION_WAYPOINTS, 10000);
 
 	//  /* USER CODE END 2 */
-	//
-	static unsigned short pin_state = 0;
-	static unsigned short pin_state1 = 0;
-	static unsigned short pin_state2 = 0;
-	static unsigned short pin_state3 = 0;
+	int angle = 3;
+
+	void init_GPIO(void);
+	void init_TIM(angle);
 
 
 	//  /* Infinite loop */
@@ -235,44 +135,6 @@ int main(void)
 	{
 
 		/* USER CODE BEGIN 3 */
-
-		User_Button =  ((GPIOC->IDR &= GPIO_IDR_ID13) == (1 >> 13));
-		Touch_Button = ((GPIOB->IDR &= GPIO_IDR_ID8) == (1 >> 8));
-		if(Touch_Button)
-		{
-			GPIOB->ODR 	&= (pin_state << 0);
-			GPIOE->ODR 	&= (pin_state << 1);
-			HAL_Delay(40);
-			pin_state = !pin_state;
-			GPIOB->ODR 	|= (pin_state << 0);
-			HAL_Delay(40);
-			pin_state1 = !pin_state1;
-			GPIOB->ODR 	|= (pin_state1 << 14);
-			HAL_Delay(30);
-			pin_state2 = !pin_state2;
-			GPIOE->ODR 	|= (pin_state2 << 1);
-			HAL_Delay(5);
-			TIM1->CCR1 = 2; // compare register for pwm (when counter is below this value, pwm signal is high)
-		}
-		else
-		{
-			GPIOB->ODR 	&= (pin_state << 0);
-			GPIOE->ODR 	&= (pin_state << 1);
-			HAL_Delay(10);
-			pin_state = !pin_state;
-			GPIOB->ODR 	|= (pin_state << 0);
-			HAL_Delay(4);
-			pin_state1 = !pin_state1;
-			GPIOB->ODR 	|= (pin_state1 << 14);
-			HAL_Delay(3);
-			pin_state2 = !pin_state2;
-			GPIOE->ODR 	|= (pin_state2 << 1);
-			HAL_Delay(5);
-			TIM1->CCR1 = 5; // compare register for pwm (when counter is below this value, pwm signal is high)
-		}
-
-
-
   }
   /* USER CODE END 3 */
 }
