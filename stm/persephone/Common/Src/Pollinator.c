@@ -13,7 +13,10 @@
 	int angle; //1 means neg 45 degree  3 means 45 degree
 
 
-void init_GPIO(void){
+
+void init_TIM(int angle)
+{
+
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOAEN;
 
 	GPIOA->MODER &= ~(GPIO_MODER_MODE8);
@@ -24,10 +27,6 @@ void init_GPIO(void){
 
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOBEN;
 	GPIOB->MODER &= ~(GPIO_MODER_MODE8); //Touch sensor input
-}
-
-void init_TIM(int angle)
-{
 
 	RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;
 	TIM1->CR1 |= TIM_CR1_ARPE; // set auto reload preload
@@ -47,7 +46,6 @@ void init_TIM(int angle)
 
 	TIM1->CR1 |= TIM_CR1_CEN;
 
-	while(1){
 
 		Touch_Button = ((GPIOB->IDR &= GPIO_IDR_ID8) == (1 >> 8));
 		if(Touch_Button)
@@ -58,7 +56,7 @@ void init_TIM(int angle)
 		{
 			TIM1->CCR1 = angle;
 		}
-	}
+
 
 
 }
