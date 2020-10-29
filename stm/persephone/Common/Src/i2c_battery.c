@@ -38,7 +38,7 @@ void initI2C2(void){
 void initI2C1(void) {  // configures i2c1 as the slave (pg 2136 of ref manual)
 //Enable I2C clock and select sysclock as clock source
 	uint32_t slaveOwnAddr = 0x30; // set the slave address
-	//NVIC_EnableIRQ(I2C1_EV_IRQn);  // enable I2C1 event interrupt
+	NVIC_EnableIRQ(I2C1_EV_IRQn);  // enable I2C1 event interrupt
 
 	RCC->APB1LENR |= RCC_APB1LENR_I2C1EN;
 
@@ -101,7 +101,7 @@ void I2C_StartTX(I2C_TypeDef* I2C, uint32_t DevAddress, uint8_t Size, uint8_t Di
 	}
 	I2C->CR2 |= DevAddress <<1;
 	I2C->CR2 |= Size<<16;
-
+	I2C->CR2 |= I2C_CR2_START; // send start bit
 	// PROCESS: sends start bit, starts clock, sends 7 bit address, holds low for for write/goes high for read,
 	// waits for slave ack (pull down line after w/r bit), and then low
 }

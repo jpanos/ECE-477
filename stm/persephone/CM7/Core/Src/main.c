@@ -175,8 +175,7 @@ int main(void)
 	I2C2GPIOINIT();
 	initI2C1();
 	I2C1GPIOINIT();
-	I2C_StartTX(I2C2,  0x30, Size, MASTERWRITE);
-	I2C2->CR2 |= I2C_CR2_START; // send start bit
+	I2C_StartTX(I2C2,  0x30, Size, MASTERREAD);
 	// set_mavlink_msg_interval(MAVLINK_MSG_ID_TRAJECTORY_REPRESENTATION_WAYPOINTS, 10000);
 	// spin_lock_core(HSEM_ID_CMD_BLOCK, 4, CMD_BLOCK_PROC_ID);
 
