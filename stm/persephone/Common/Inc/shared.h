@@ -35,6 +35,8 @@ typedef struct _mavlink_shared_data {
 //////////////SYSTEM DATA END///////////////////////
 
 //////////////MAVLINK SHARED DATA START/////////////////////
+	uint8_t mav_state;
+	uint8_t mav_mode_flag;
 	uint8_t landed_state;
 
 	ListNode nodes[MVPSSC_MSG_BUFF_SIZE];
@@ -49,6 +51,10 @@ typedef struct _mavlink_shared_data {
 	int longitude_raw;
 	int latitude;
 	int longitude;
+
+	float pos_x;
+	float pos_y;
+	float pos_z;
 
 	int pos_period;
 	uint8_t pos_mode;

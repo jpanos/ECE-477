@@ -15,6 +15,7 @@ mavlink_trajectory_representation_waypoints_t _rcv_msg_traj_way;
 mavlink_global_position_int_t _rcv_msg_gps_int;
 mavlink_gps_raw_int_t _rcv_msg_gps_raw_int;
 mavlink_altitude_t _rcv_msg_altitude;
+mavlink_local_position_ned_t _rcv_local_pos_ned;
 mavlink_ping_t _rcv_msg_ping;
 mavlink_extended_sys_state_t _rcv_extended_sys_state;
 mavlink_command_int_t _rcv_cmd_int;
@@ -28,8 +29,8 @@ uint8_t _heartbeat_msg_initialize(void) {
   mavlink_msg_heartbeat_pack(mavlink_system.sysid, 			 // system_id
                              mavlink_system.compid,			 // component_id
                              &_hb_msg,                   // mavlink_message_t
-                             MAV_TYPE_QUADROTOR,   			 // MAV_TYPE
-                             MAV_AUTOPILOT_PX4,    			 // MAV_AUTOPILOT
+                             MAV_TYPE_ONBOARD_CONTROLLER,// MAV_TYPE
+                             MAV_AUTOPILOT_INVALID,			 // MAV_AUTOPILOT
                              MAV_MODE_FLAG_AUTO_ENABLED, // base_mode
                              0,                    			 // custom_mode
                              MAV_STATE_ACTIVE      			 // system_status
@@ -119,8 +120,11 @@ uint8_t mavlink_initialize(void) {
 	shared->latitude = -1;
 	shared->longitude = -1;
 
+	shared->mav_state = 0;
+	shared->mav_mode_flag = 0;
 	// set position mask to ignore all
-	shared->pos_type_mask = MVPSSC_POS_MASK_IGNORE_ALL;
+	// shared->pos_type_mask = MVPSSC_POS_MASK_IGNORE_ALL;
+	shared->pos_type_mask = MVPSSC_POS_MASK_TAKEOFF;
 	shared->pos_mode |= MVPSSC_POS_MODE_EN;
 	set_pos_freq(4);
 
@@ -228,6 +232,8 @@ uint8_t parse_mavlink_message(mavlink_message_t *msg) {
 	switch (msg->msgid) {
 		case MAVLINK_MSG_ID_HEARTBEAT:
 			mavlink_msg_heartbeat_decode(msg, &_rcv_msg_heartbeat);
+			shared->mav_state = _rcv_msg_heartbeat.system_status;
+			shared->mav_mode_flag = _rcv_msg_heartbeat.base_mode;
 			break;
 		case MAVLINK_MSG_ID_PING:
 			mavlink_msg_ping_decode(msg, &_rcv_msg_ping);
@@ -250,6 +256,12 @@ uint8_t parse_mavlink_message(mavlink_message_t *msg) {
 			mavlink_msg_gps_raw_int_decode(msg, &_rcv_msg_gps_raw_int);
 			shared->longitude_raw = _rcv_msg_gps_raw_int.lon;
 			shared->latitude_raw = _rcv_msg_gps_raw_int.lat;
+			break;
+		case MAVLINK_MSG_ID_LOCAL_POSITION_NED:
+			mavlink_msg_local_position_ned_decode(msg, &_rcv_local_pos_ned);
+			shared->pos_x = _rcv_local_pos_ned.x;
+			shared->pos_y = _rcv_local_pos_ned.y;
+			shared->pos_z = _rcv_local_pos_ned.z;
 			break;
 		case MAVLINK_MSG_ID_COMMAND_INT:
 			mavlink_msg_command_int_decode(msg, &_rcv_cmd_int);
@@ -278,7 +290,7 @@ void TIM6_DAC_IRQHandler() {
 	// blink light
 	GPIOB->ODR ^= GPIO_ODR_OD14;
 	// send heartbeat message at 1Hz
-	if (shared->time_boot_ms % 1000 == 0) {
+	if (shared->time_boot_ms % 500 == 0) {
 		queue_message(&_hb_msg, TIM6_PROC_ID);
 	}
 

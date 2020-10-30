@@ -57,21 +57,6 @@ uint8_t send_command(uint32_t cmdid, mavlink_message_t * msg) {
 }
 
 
-uint8_t set_mavlink_msg_interval(uint16_t message_id, int32_t interval_us) {
-	// given a message id and us interval, device that is sent this command will send mesage at that interval
-	mavlink_message_t msg;
-	mavlink_msg_message_interval_pack(
-			mavlink_system.sysid,
-			mavlink_system.compid,
-			&msg,
-			message_id,
-			interval_us
-			);
-	if (queue_message(&msg, 0) != NULL) return MVPSSC_SUCCESS;
-	else return MVPSSC_FAIL;
-}
-
-
 uint8_t send_ping_message(void) {
 	mavlink_message_t msg;
 	mavlink_msg_ping_pack(

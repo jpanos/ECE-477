@@ -8,6 +8,16 @@
  *  Requirments: USART1, TIM6, DAC1_Stream0
  */
 
+/*
+ * TODO:
+ *   - global position setpoint
+ *   - dynamically change setpoint
+ *   - change bit masks
+ *
+ *   - send heartbeat more frequently
+ *   - check logs all the time
+ */
+
 #ifndef INC_MAVLINK_PSSC_H_
 #define INC_MAVLINK_PSSC_H_
 
@@ -33,8 +43,11 @@
 #define MVPSSC_POS_MODE_EN 0x1
 
 #define MVPSSC_POS_MASK_IGNORE_ALL 0x0dff
-#define MVPSSC_POS_MASK_TAKEOFF 0x1ddb
-#define MVPSSC_POS_MASK_LANDING 0x2ddb
+//#define MVPSSC_POS_MASK_TAKEOFF 0x1ddb
+#define MVPSSC_POS_MASK_TAKEOFF 0x0df8
+#define MVPSSC_POS_MASK_LANDING 0x0df8
+#define MVPSSC_POS_POSITION_SETPOINT 0x0df8
+#define MVPSSC_POS_VELOCITY_SETPOINT 0x0dc7
 
 extern mavlink_system_t mavlink_system;
 extern mavlink_system_t mavlink_autopilot;
@@ -62,10 +75,6 @@ uint8_t send_command_int(uint16_t command, uint8_t frame,
 													float param1, float param2, float param3, float param4, int32_t x, int32_t y, float z);
 uint8_t send_command_long(uint16_t command,
 													float param1, float param2, float param3, float param4, float param5, float param6, float param7);
-
-// will send a message to flight controller instructing it to send
-// the message_id specified at the interval specified
-uint8_t set_mavlink_msg_interval(uint16_t message_id, int32_t interval_us);
 
 // send ping message
 uint8_t send_ping_message(void);

@@ -103,6 +103,8 @@ int main(void)
 
   /* Initialize all configured peripherals */
   /* USER CODE BEGIN 2 */
+  while (shared->mav_state == MAV_STATE_UNINIT) {}
+	send_command_long(MAV_CMD_SET_MESSAGE_INTERVAL, MAVLINK_MSG_ID_LOCAL_POSITION_NED, 1000, 0, 0, 0, 0, 1);
   //I2C2init()
   /* USER CODE END 2 */
 

@@ -123,6 +123,11 @@ int main(void)
 	GPIOC->MODER &= ~(0xc000000);
 	GPIOB->ODR ^= GPIO_ODR_OD14;
 
+	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOEEN;
+	// put red led in output mode
+	GPIOE->MODER &= ~(GPIO_MODER_MODE1);
+	GPIOE->MODER |= GPIO_MODER_MODE1_0;
+	GPIOE->ODR &= ~GPIO_ODR_OD1;
 	// set_mavlink_msg_interval(MAVLINK_MSG_ID_PING, 10000);
 	//send_ping_message();
 	// set_mavlink_msg_interval(MAVLINK_MSG_ID_GLOBAL_POSITION_INT, 10000);
@@ -156,19 +161,40 @@ int main(void)
 			// send_command_long(MAV_CMD_DO_MOTOR_TEST, 1, MOTOR_TEST_THROTTLE_PERCENT, 20, 4, 1, MOTOR_TEST_ORDER_SEQUENCE, 0);
 			// send_command_int(MAV_CMD_DO_MOTOR_TEST, MAV_FRAME_GLOBAL, 1, MOTOR_TEST_THROTTLE_PERCENT, 20, 4, 1,
 			//										MOTOR_TEST_ORDER_SEQUENCE, 0);
+			GPIOE->ODR |= GPIO_ODR_OD1;
+			msleep(5000);
+
 			send_command_long(MAV_CMD_NAV_GUIDED_ENABLE, 0, 0, 0, 0, 0, 0, 0);
+			send_command_long(MAV_CMD_DO_SET_MODE,
+												(MAV_MODE_FLAG_CUSTOM_MODE_ENABLED | MAV_MODE_FLAG_SAFETY_ARMED),
+												6, 0, 0, 0, 0, 0);
+			float z_setpoint = shared->pos_z - 0.5;
+			//set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_POSITION_SETPOINT, 0, 0, z_setpoint, 0, 0, 0, 0, 0, 0, 0, 0);
+			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, -.7, 0, 0, 0, 0, 0);
 			send_arm_disarm_message(1, 0);
+			msleep(500);
+//			send_command_long(MAV_CMD_DO_SET_MODE,
+//												(MAV_MODE_FLAG_CUSTOM_MODE_ENABLED | MAV_MODE_FLAG_SAFETY_ARMED),
+//												6, 0, 0, 0, 0, 0);
+			// send_command_long(MAV_CMD_NAV_TAKEOFF, NAN, NAN, NAN, NAN, NAN, NAN, NAN);
 			// set setpoint 5 meters up
-			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_TAKEOFF, 0, 0, -1.5, 0, 0, -.5, 0, 0, 0, 0, 0);
-			while (shared->altitude_msl <= alt + 1.5) {
-				if (shared->landed_state == MAV_LANDED_STATE_ON_GROUND) goto out;
+			// set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_TAKEOFF, 0, 0, -1.5, 0, 0, 0, 0, 0, 0, 0, 0);
+			while (shared->pos_z > z_setpoint) {
+				// send_command_long(MAV_CMD_NAV_TAKEOFF, NAN, NAN, NAN, NAN, NAN, NAN, NAN);
+				// if (shared->landed_state == MAV_LANDED_STATE_ON_GROUND) goto out;
 			}
-			msleep(1000);
-			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_LANDING, 0, 0, 1.5, 0, 0, .5, 0, 0, 0, 0, 0);
+			GPIOE->ODR &= ~GPIO_ODR_OD1;
+			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, 0x3000, 0, 0, 0, 0, 0, -.7, 0, 0, 0, 0, 0);
+//			send_command_long(MAV_CMD_DO_SET_MODE,
+//												(MAV_MODE_FLAG_CUSTOM_MODE_ENABLED | MAV_MODE_FLAG_SAFETY_ARMED),
+//												6, 0, 0, 0, 0, 0);
+			msleep(5000);
+			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, .7, 0, 0, 0, 0, 0);
 			while (shared->landed_state != MAV_LANDED_STATE_ON_GROUND);
+			GPIOE->ODR |= GPIO_ODR_OD1;
 			send_arm_disarm_message(0, 0);
 		}
-out:
+// out:
 		prev_val = GPIOC->IDR >> 8;
 		/* USER CODE BEGIN 3 */
   }
