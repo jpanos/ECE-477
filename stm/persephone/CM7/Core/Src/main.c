@@ -54,8 +54,9 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-	int slaverxdata = 0; // create a global receive data variable
-	int masterrxdata = 0;
+	char slaverxdata = 0; // create a global receive data variable
+	char masterrxdata = 0;
+	char mastertxdata = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -95,17 +96,36 @@ void I2C1_EV_IRQHandler(void) { // I2C1 recieve interrupt handler
 
 void I2C2_EV_IRQHandler(void) { // I2C2 interrupt handler
 	if((I2C2->ISR & I2C_ISR_TXE) == I2C_ISR_TXE){ // need to transmit??
-		uint8_t data = 0xDD;
-		I2C2->TXDR = data;
-		uint32_t slaveaddr = 0x30; // battery monitor address
-		uint8_t Size = 1; // set the size to 1 byte for now
-		I2C_StartTX(I2C2,  slaveaddr, Size, MASTERWRITE);
+		//uint8_t data = 0xDD;
+		// TO DO: clear flag
+		I2C2->TXDR = mastertxdata;
+		//uint32_t slaveaddr = 0x30; // battery monitor address
+		//uint8_t Size = 1; // set the size to 1 byte for now
+		//I2C_StartTX(I2C2,  slaveaddr, Size, MASTERWRITE);
+		I2C2->CR1 &= ~I2C_CR1_TXIE; // dont allow tx interrupt anymore
 	}
 	else if((I2C2->ISR & I2C_ISR_RXNE)==I2C_ISR_RXNE){ // is reciever not empty
 		masterrxdata = I2C2->RXDR; // read th recieved data
 	}
 }
 
+void I2C2battTalk(int writeMode, uint32_t regAddr, char byte){
+	// this function performs a read or write sequence to the bq76920
+	// right now enables 1 byte writing
+	// inputs: MASTERREAD/MASTERWRITE, target register address, byte to write
+	//int bqaddr = 0x08;
+	int bqaddr = 0x30; // todo: change slave addr
+	if (writeMode == MASTERWRITE)
+	{
+		mastertxdata = byte; // byte to send
+		I2C_StartTX(I2C2, bqaddr, 1, MASTERWRITE); // send the slave address and write request
+		I2C2->CR1 |= I2C_CR1_TXIE; // allow transmitter empty interrupt
+	}
+	else // do read
+	{
+
+	}
+}
 /* USER CODE END 0 */
 
 /**
@@ -175,7 +195,11 @@ int main(void)
 	I2C2GPIOINIT();
 	initI2C1();
 	I2C1GPIOINIT();
-	I2C_StartTX(I2C2,  0x30, Size, MASTERREAD);
+	//I2C_StartTX(I2C2,  0x30, Size, MASTERREAD);
+	// new 10.19.2020
+	int reg = 0xCC;
+	char send = 0xaa;// byte to send
+	I2C2battTalk(MASTERWRITE, reg, send); //todo: send dest reg addr
 	// set_mavlink_msg_interval(MAVLINK_MSG_ID_TRAJECTORY_REPRESENTATION_WAYPOINTS, 10000);
 	// spin_lock_core(HSEM_ID_CMD_BLOCK, 4, CMD_BLOCK_PROC_ID);
 

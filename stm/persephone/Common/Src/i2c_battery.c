@@ -4,6 +4,7 @@
 void initI2C2(void){
 	// This function initializes I2C
 	uint32_t OwnAddr = 0x52; // decide own address
+	NVIC_EnableIRQ(I2C2_EV_IRQn);
 	//Enable I2C clock and select sysclock as clock source
 	RCC->APB1LENR |= RCC_APB1LENR_I2C2EN;
 	//RCC-> D2CCIP2R |= 0x3<<12; // set clock to CSI clock ~ 4 MHz(Pg 447 ref manual) (todo: check)
