@@ -119,12 +119,13 @@ int main(void)
 
 	// mavlink_initialize();
 
+	// initialize push button stuff
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN;
 	GPIOC->MODER &= ~(0xc000000);
 	GPIOB->ODR ^= GPIO_ODR_OD14;
 
+	// put yellow led in output mode
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOEEN;
-	// put red led in output mode
 	GPIOE->MODER &= ~(GPIO_MODER_MODE1);
 	GPIOE->MODER |= GPIO_MODER_MODE1_0;
 	GPIOE->ODR &= ~GPIO_ODR_OD1;
@@ -144,57 +145,45 @@ int main(void)
 
 	while (1)
 	{
+		// a wait for loop used for my shitty edge detection
 		for (int i = 0; i <1000000; i++){}
-		// send_ping_message();
 		if (prev_val == 0 && GPIOC->IDR != 0) {
-//			GPIOB->ODR ^= GPIO_ODR_OD14;
-//
 			float alt = shared->altitude_msl;
-//			send_arm_disarm_message(1, 1);
-//			send_command_int(MAV_CMD_NAV_TAKEOFF, MAV_FRAME_GLOBAL, 0, 0, 0, 0,
-//												shared->latitude, shared->longitude, alt + 2);
-//			// send_command_int(MAV_CMD_NAV_TAKEOFF_LOCAL, MAV_FRAME_LOCAL_NED, 0, 0, 1, 0, 0, 0, -5);
-//			while (shared->altitude_msl <= alt + 1.5) {}
-//			// send_command_int(MAV_CMD_NAV_LAND_LOCAL, MAV_FRAME_LOCAL_NED, 0, .25, 1, 180, 0, 0, 0);
-//			send_command_int(mav_cmd_nav_land, mav_frame_global, 0, precision_land_mode_disabled, 0, 0,
-//												shared->latitude, shared->longitude, alt);
-			// send_command_long(MAV_CMD_DO_MOTOR_TEST, 1, MOTOR_TEST_THROTTLE_PERCENT, 20, 4, 1, MOTOR_TEST_ORDER_SEQUENCE, 0);
-			// send_command_int(MAV_CMD_DO_MOTOR_TEST, MAV_FRAME_GLOBAL, 1, MOTOR_TEST_THROTTLE_PERCENT, 20, 4, 1,
-			//										MOTOR_TEST_ORDER_SEQUENCE, 0);
+			// yellow light on to show that in if statement
 			GPIOE->ODR |= GPIO_ODR_OD1;
 			msleep(5000);
 
+			// enable mode; not sure if this is needed
 			send_command_long(MAV_CMD_NAV_GUIDED_ENABLE, 0, 0, 0, 0, 0, 0, 0);
+			// set to offboard mode
 			send_command_long(MAV_CMD_DO_SET_MODE,
 												(MAV_MODE_FLAG_CUSTOM_MODE_ENABLED | MAV_MODE_FLAG_SAFETY_ARMED),
 												6, 0, 0, 0, 0, 0);
+			// a variabe, sets z setpoint to halz z velocit at
 			float z_setpoint = shared->pos_z - 0.5;
-			//set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_POSITION_SETPOINT, 0, 0, z_setpoint, 0, 0, 0, 0, 0, 0, 0, 0);
+			// set z velocity to -.7 m/s (z positive axis is down)
 			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, -.7, 0, 0, 0, 0, 0);
+			// arm drone
 			send_arm_disarm_message(1, 0);
 			msleep(500);
-//			send_command_long(MAV_CMD_DO_SET_MODE,
-//												(MAV_MODE_FLAG_CUSTOM_MODE_ENABLED | MAV_MODE_FLAG_SAFETY_ARMED),
-//												6, 0, 0, 0, 0, 0);
-			// send_command_long(MAV_CMD_NAV_TAKEOFF, NAN, NAN, NAN, NAN, NAN, NAN, NAN);
-			// set setpoint 5 meters up
-			// set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_TAKEOFF, 0, 0, -1.5, 0, 0, 0, 0, 0, 0, 0, 0);
-			while (shared->pos_z > z_setpoint) {
-				// send_command_long(MAV_CMD_NAV_TAKEOFF, NAN, NAN, NAN, NAN, NAN, NAN, NAN);
-				// if (shared->landed_state == MAV_LANDED_STATE_ON_GROUND) goto out;
-			}
+
+			// wait for z pos to reach above setpoint
+			while (shared->pos_z > z_setpoint) {}
+			// turn off yellow led
 			GPIOE->ODR &= ~GPIO_ODR_OD1;
-			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, 0x3000, 0, 0, 0, 0, 0, -.7, 0, 0, 0, 0, 0);
-//			send_command_long(MAV_CMD_DO_SET_MODE,
-//												(MAV_MODE_FLAG_CUSTOM_MODE_ENABLED | MAV_MODE_FLAG_SAFETY_ARMED),
-//												6, 0, 0, 0, 0, 0);
+			// 3rd argument is mask, when set to 0x1000 or 0x2000, puts drone in loiter mode
+			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, 0x3000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 			msleep(5000);
+
+			// set setpoint to go down at .7 m/s
 			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, .7, 0, 0, 0, 0, 0);
+
+			// when landed state is detected, turn on led and disarm drone
 			while (shared->landed_state != MAV_LANDED_STATE_ON_GROUND);
 			GPIOE->ODR |= GPIO_ODR_OD1;
 			send_arm_disarm_message(0, 0);
 		}
-// out:
+		// other part of shitty edge detection
 		prev_val = GPIOC->IDR >> 8;
 		/* USER CODE BEGIN 3 */
   }
