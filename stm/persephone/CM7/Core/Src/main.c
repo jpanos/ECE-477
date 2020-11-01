@@ -57,6 +57,8 @@
 	char slaverxdata = 0; // create a global receive data variable
 	char masterrxdata = 0;
 	char mastertxdata = 0;
+	uint32_t i2cTargReg = 0;
+	char i2cmode = MASTERWRITE;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -72,7 +74,6 @@ void I2C1_EV_IRQHandler(void) { // I2C1 recieve interrupt handler
 	if ((I2C_interrupt_status & I2C_ISR_ADDR) == I2C_ISR_ADDR ) // address detected {
 	{
 		I2C1->ICR |= I2C_ICR_ADDRCF; // clear flag
-
 		if ((I2C_interrupt_status & I2C_ISR_DIR) == I2C_ISR_DIR) {
 			// Check transfer direction, enter loop if master is requesting a read (ie: slave is transmitter)
 			I2C1->CR1|= I2C_CR1_TXIE; // enable transmit interrupt
@@ -98,13 +99,23 @@ void I2C2_EV_IRQHandler(void) { // I2C2 interrupt handler
 	if((I2C2->ISR & I2C_ISR_TXE) == I2C_ISR_TXE){ // need to transmit??
 		//uint8_t data = 0xDD;
 		// TO DO: clear flag
-		I2C2->TXDR = mastertxdata;
-		//uint32_t slaveaddr = 0x30; // battery monitor address
-		//uint8_t Size = 1; // set the size to 1 byte for now
-		//I2C_StartTX(I2C2,  slaveaddr, Size, MASTERWRITE);
-		I2C2->CR1 &= ~I2C_CR1_TXIE; // dont allow tx interrupt anymore
+		if (i2cTargReg)
+		{
+			// send the target register address
+			I2C2->TXDR = i2cTargReg; // send the target reg addr
+			i2cTargReg = 0;
+			if (i2cmode == MASTERWRITE){
+				I2C2->CR1 &= ~I2C_CR1_TXIE; // dont allow tx interrupt anymore
+				I2C2->CR1 |= I2C_CR1_RXIE; // allow rx not empty interrupt
+			}
+		}
+		else {
+			I2C2->TXDR = mastertxdata;
+			I2C2->CR1 &= ~I2C_CR1_TXIE; // dont allow tx interrupt anymore
+		}
 	}
 	else if((I2C2->ISR & I2C_ISR_RXNE)==I2C_ISR_RXNE){ // is reciever not empty
+		I2C2->CR1 &= ~I2C_CR1_RXIE; // disable rxne interrupt
 		masterrxdata = I2C2->RXDR; // read th recieved data
 	}
 }
@@ -113,17 +124,21 @@ void I2C2battTalk(int writeMode, uint32_t regAddr, char byte){
 	// this function performs a read or write sequence to the bq76920
 	// right now enables 1 byte writing
 	// inputs: MASTERREAD/MASTERWRITE, target register address, byte to write
-	//int bqaddr = 0x08;
-	int bqaddr = 0x30; // todo: change slave addr
+	int bqaddr = 0x08;
+	i2cTargReg = regAddr;
+	i2cmode = writeMode;
 	if (writeMode == MASTERWRITE)
 	{
 		mastertxdata = byte; // byte to send
-		I2C_StartTX(I2C2, bqaddr, 1, MASTERWRITE); // send the slave address and write request
+		int size = 2; // send two bytes: reg and data
+		I2C_StartTX(I2C2, bqaddr, size, MASTERWRITE); // send the slave address and write request
 		I2C2->CR1 |= I2C_CR1_TXIE; // allow transmitter empty interrupt
 	}
 	else // do read
 	{
-
+		int size = 2;
+		I2C_StartTX(I2C2, bqaddr, size, MASTERREAD);
+		I2C2->CR1 |= I2C_CR1_TXIE; // allow tx emply interrupt so can send dest reg.
 	}
 }
 /* USER CODE END 0 */
