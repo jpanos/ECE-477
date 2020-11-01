@@ -88,7 +88,13 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
+  // NVIC_EncodePriority(PriorityGroup, PreemptPriority, SubPriority)
+  // NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
+  // NVIC_SetPriority
+  // NVIC_SetPriority();
 
+  shared_init();
+  mavlink_initialize();
   /* USER CODE END Init */
 
   /* USER CODE BEGIN SysInit */
@@ -97,13 +103,16 @@ int main(void)
 
   /* Initialize all configured peripherals */
   /* USER CODE BEGIN 2 */
+  while (shared->mav_state == MAV_STATE_UNINIT) {}
+	send_command_long(MAV_CMD_SET_MESSAGE_INTERVAL, MAVLINK_MSG_ID_LOCAL_POSITION_NED, 1000, 0, 0, 0, 0, 1);
   //I2C2init()
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+
+	while (1)
+	{
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
