@@ -19,7 +19,7 @@ void initI2C2(void){
 	// Timing config
 	I2C2->TIMINGR = 0; // clear timing reg
 	I2C2->TIMINGR &= ~I2C_TIMINGR_PRESC; //clear presc
-	I2C2->TIMINGR |= 9<<28; // set presc to 9 (now clock is 400 kHz)
+	I2C2->TIMINGR |= 14<<28; // set presc to 9 (now clock is 400 kHz)
 	I2C2->TIMINGR |= 32; // set SCLL to 5
 	I2C2->TIMINGR |= 26<<8; // set SCLH to 5
 	I2C2->TIMINGR |= 0x2<<16; // set SDADEL to table value

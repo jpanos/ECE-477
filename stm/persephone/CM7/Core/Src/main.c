@@ -57,7 +57,7 @@
 	char slaverxdata = 0; // create a global receive data variable
 	char masterrxdata = 0;
 	char mastertxdata = 0;
-	uint32_t i2cTargReg = 0;
+	int i2cTargReg = -1;
 	char i2cmode = MASTERWRITE;
 /* USER CODE END PV */
 
@@ -99,14 +99,16 @@ void I2C2_EV_IRQHandler(void) { // I2C2 interrupt handler
 	if((I2C2->ISR & I2C_ISR_TXE) == I2C_ISR_TXE){ // need to transmit??
 		//uint8_t data = 0xDD;
 		// TO DO: clear flag
-		if (i2cTargReg)
+		if (i2cTargReg != -1)
 		{
 			// send the target register address
 			I2C2->TXDR = i2cTargReg; // send the target reg addr
-			i2cTargReg = 0;
-			if (i2cmode == MASTERWRITE){
+			i2cTargReg = -1;
+			if (i2cmode == MASTERREAD){
 				I2C2->CR1 &= ~I2C_CR1_TXIE; // dont allow tx interrupt anymore
-				I2C2->CR1 |= I2C_CR1_RXIE; // allow rx not empty interrupt
+				I2C2battTalk(MASTERREAD, -1, 0x0);
+				I2C2->CR1 |= I2C_CR1_RXIE;
+				//I2C2->CR1 |= I2C_CR1_RXIE; // allow rx not empty interrupt
 			}
 		}
 		else {
@@ -136,9 +138,14 @@ void I2C2battTalk(int writeMode, uint32_t regAddr, char byte){
 	}
 	else // do read
 	{
-		int size = 2;
-		I2C_StartTX(I2C2, bqaddr, size, MASTERREAD);
-		I2C2->CR1 |= I2C_CR1_TXIE; // allow tx emply interrupt so can send dest reg.
+		int size = 1;
+		if (i2cTargReg != -1) {
+			I2C_StartTX(I2C2, bqaddr, size, MASTERWRITE);
+					I2C2->CR1 |= I2C_CR1_TXIE; // allow tx emply interrupt so can send dest reg.
+		}
+		else{
+			I2C_StartTX(I2C2, bqaddr, size, MASTERREAD);
+		}
 	}
 }
 /* USER CODE END 0 */
@@ -212,9 +219,12 @@ int main(void)
 	I2C1GPIOINIT();
 	//I2C_StartTX(I2C2,  0x30, Size, MASTERREAD);
 	// new 10.19.2020
-	int reg = 0xCC;
-	char send = 0xaa;// byte to send
+	//int reg = 0xCC;
+	int reg = 0x04;
+	char send = 0x18;// byte to send
 	I2C2battTalk(MASTERWRITE, reg, send); //todo: send dest reg addr
+	HAL_Delay(2);
+	I2C2battTalk(MASTERREAD, reg, send); //todo: send dest reg addr
 	// set_mavlink_msg_interval(MAVLINK_MSG_ID_TRAJECTORY_REPRESENTATION_WAYPOINTS, 10000);
 	// spin_lock_core(HSEM_ID_CMD_BLOCK, 4, CMD_BLOCK_PROC_ID);
 
