@@ -69,31 +69,6 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void I2C1_EV_IRQHandler(void) { // I2C1 recieve interrupt handler
-	uint32_t I2C_interrupt_status = I2C1->ISR; // get flags
-	if ((I2C_interrupt_status & I2C_ISR_ADDR) == I2C_ISR_ADDR ) // address detected {
-	{
-		I2C1->ICR |= I2C_ICR_ADDRCF; // clear flag
-		if ((I2C_interrupt_status & I2C_ISR_DIR) == I2C_ISR_DIR) {
-			// Check transfer direction, enter loop if master is requesting a read (ie: slave is transmitter)
-			I2C1->CR1|= I2C_CR1_TXIE; // enable transmit interrupt
-		}
-		// enable RX interrupt here
-		else {
-			I2C1->CR1|= I2C_CR1_RXIE; // enable recieve interrupt
-		}
-	}
-	else if ((I2C_interrupt_status & I2C_ISR_TXIS) == I2C_ISR_TXIS){
-		// check if transmit data register is empty
-		I2C1->CR1 &= ~I2C_CR1_TXIE; // Disable the transmit interrupt
-		uint8_t data = 0xCC; //random data byte to send
-		I2C1->TXDR = data; // byte to send
-	}
-	else if ((I2C_interrupt_status & I2C_ISR_RXNE) == I2C_ISR_RXNE){
-		I2C1->CR1 &= ~I2C_CR1_RXIE; // disable receive interrupt
-		slaverxdata = I2C1->RXDR; // read the data
-	}
-}
 
 void I2C2_EV_IRQHandler(void) { // I2C2 interrupt handler
 	if((I2C2->ISR & I2C_ISR_TXE) == I2C_ISR_TXE){ // need to transmit??
@@ -210,24 +185,19 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 	mavlink_initialize();
-	//uint32_t bqAddr = 0x08; // battery monitor address
-	uint8_t Size = 2; // set the size to 1 byte for now
-	// uncommented interrupt enable
 	initI2C2(); 				// init i2c2
 	I2C2GPIOINIT();
-	initI2C1();
-	I2C1GPIOINIT();
-	//I2C_StartTX(I2C2,  0x30, Size, MASTERREAD);
-	// new 10.19.2020
-	//int reg = 0xCC;
 	int reg = 0x04;
 	char send = 0x18;// byte to send
 	I2C2battTalk(MASTERWRITE, reg, send); //todo: send dest reg addr
 	HAL_Delay(2);
 	I2C2battTalk(MASTERREAD, reg, send); //todo: send dest reg addr
+<<<<<<< HEAD
 	// set_mavlink_msg_interval(MAVLINK_MSG_ID_TRAJECTORY_REPRESENTATION_WAYPOINTS, 10000);
 	// spin_lock_core(HSEM_ID_CMD_BLOCK, 4, CMD_BLOCK_PROC_ID);
 
+=======
+>>>>>>> savingchangesforrebase
 	//  /* USER CODE END 2 */
 	//
 	//  /* Infinite loop */
