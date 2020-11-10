@@ -20,6 +20,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "i2c_battery.h"
+#include <shared.h>
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -55,10 +56,10 @@
 
 /* USER CODE BEGIN PV */
 	char slaverxdata = 0; // create a global receive data variable
-	char masterrxdata = 0;
-	char mastertxdata = 0;
-	int i2cTargReg = -1;
-	char i2cmode = MASTERWRITE;
+//	char masterrxdata = 0;
+//	char mastertxdata = 0;
+//	int i2cTargReg = -1;
+//	char i2cmode = MASTERWRITE;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -74,12 +75,12 @@ void I2C2_EV_IRQHandler(void) { // I2C2 interrupt handler
 	if((I2C2->ISR & I2C_ISR_TXE) == I2C_ISR_TXE){ // need to transmit??
 		//uint8_t data = 0xDD;
 		// TO DO: clear flag
-		if (i2cTargReg != -1)
+		if (shared->i2cTargReg != -1)
 		{
 			// send the target register address
-			I2C2->TXDR = i2cTargReg; // send the target reg addr
-			i2cTargReg = -1;
-			if (i2cmode == MASTERREAD){
+			I2C2->TXDR = shared->i2cTargReg; // send the target reg addr
+			shared->i2cTargReg = -1;
+			if (shared->i2cmode == MASTERREAD){
 				I2C2->CR1 &= ~I2C_CR1_TXIE; // dont allow tx interrupt anymore
 				I2C2battTalk(MASTERREAD, -1, 0x0);
 				I2C2->CR1 |= I2C_CR1_RXIE;
@@ -87,42 +88,17 @@ void I2C2_EV_IRQHandler(void) { // I2C2 interrupt handler
 			}
 		}
 		else {
-			I2C2->TXDR = mastertxdata;
+			I2C2->TXDR = shared->mastertxdata;
 			I2C2->CR1 &= ~I2C_CR1_TXIE; // dont allow tx interrupt anymore
 		}
 	}
 	else if((I2C2->ISR & I2C_ISR_RXNE)==I2C_ISR_RXNE){ // is reciever not empty
 		I2C2->CR1 &= ~I2C_CR1_RXIE; // disable rxne interrupt
-		masterrxdata = I2C2->RXDR; // read th recieved data
+		shared->masterrxdata = I2C2->RXDR; // read th recieved data
 	}
 }
 
-void I2C2battTalk(int writeMode, uint32_t regAddr, char byte){
-	// this function performs a read or write sequence to the bq76920
-	// right now enables 1 byte writing
-	// inputs: MASTERREAD/MASTERWRITE, target register address, byte to write
-	int bqaddr = 0x08;
-	i2cTargReg = regAddr;
-	i2cmode = writeMode;
-	if (writeMode == MASTERWRITE)
-	{
-		mastertxdata = byte; // byte to send
-		int size = 2; // send two bytes: reg and data
-		I2C_StartTX(I2C2, bqaddr, size, MASTERWRITE); // send the slave address and write request
-		I2C2->CR1 |= I2C_CR1_TXIE; // allow transmitter empty interrupt
-	}
-	else // do read
-	{
-		int size = 1;
-		if (i2cTargReg != -1) {
-			I2C_StartTX(I2C2, bqaddr, size, MASTERWRITE);
-					I2C2->CR1 |= I2C_CR1_TXIE; // allow tx emply interrupt so can send dest reg.
-		}
-		else{
-			I2C_StartTX(I2C2, bqaddr, size, MASTERREAD);
-		}
-	}
-}
+
 /* USER CODE END 0 */
 
 /**
@@ -184,20 +160,14 @@ int main(void)
   /* Initialize all configured peripherals */
   /* USER CODE BEGIN 2 */
 
-	mavlink_initialize();
 	initI2C2(); 				// init i2c2
 	I2C2GPIOINIT();
-	int reg = 0x04;
-	char send = 0x18;// byte to send
-	I2C2battTalk(MASTERWRITE, reg, send); //todo: send dest reg addr
+	//int reg = 0x04;
+	//char send = 0x18;// byte to send
+	/*I2C2battTalk(MASTERWRITE, reg, send); //todo: send dest reg addr
 	HAL_Delay(2);
 	I2C2battTalk(MASTERREAD, reg, send); //todo: send dest reg addr
-<<<<<<< HEAD
-	// set_mavlink_msg_interval(MAVLINK_MSG_ID_TRAJECTORY_REPRESENTATION_WAYPOINTS, 10000);
-	// spin_lock_core(HSEM_ID_CMD_BLOCK, 4, CMD_BLOCK_PROC_ID);
-
-=======
->>>>>>> savingchangesforrebase
+	*/
 	//  /* USER CODE END 2 */
 	//
 	//  /* Infinite loop */

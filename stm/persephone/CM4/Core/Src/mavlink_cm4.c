@@ -6,6 +6,7 @@
  */
 
 #include <mavlink_cm4.h>
+#include "i2c_battery.h"
 
 // receive structs
 mavlink_message_t _rcv_msg;
@@ -301,6 +302,11 @@ void TIM6_DAC_IRQHandler() {
 
 	if (shared->time_boot_ms % 50 == 0 && ((DMA1_Stream0->CR & 0x1) != 1)) {
 		send_next_msg();
+	}
+	if (shared->time_boot_ms % 500 == 0){
+		int reg = 0x04;
+		char send = 0x18;// byte to send
+		I2C2battTalk(MASTERWRITE,reg,send);
 	}
 
 }

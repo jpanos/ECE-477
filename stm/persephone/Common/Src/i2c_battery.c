@@ -1,5 +1,36 @@
 #include "i2c_battery.h"
+	extern char masterrxdata;
+	extern char mastertxdata;
+	extern int i2cTargReg;
+	extern char i2cmode;
 
+void I2C2battTalk(int writeMode, uint32_t regAddr, char byte){
+	// this function performs a read or write sequence to the bq76920
+	// right now enables 1 byte writing
+	// inputs: MASTERREAD/MASTERWRITE, target register address, byte to write
+	int bqaddr = 0x08;
+	shared->i2cTargReg = regAddr;
+	shared->i2cmode = writeMode;
+	if (writeMode == MASTERWRITE)
+	{
+		shared->mastertxdata = byte; // byte to send
+		int size = 2; // send two bytes: reg and data
+		I2C_StartTX(I2C2, bqaddr, size, MASTERWRITE); // send the slave address and write request
+		I2C2->CR1 |= I2C_CR1_TXIE; // allow transmitter empty interrupt
+	}
+	else // do read
+	{
+		int size = 1;
+		if (shared->i2cTargReg != -1) {
+			I2C_StartTX(I2C2, bqaddr, size, MASTERWRITE);
+					I2C2->CR1 |= I2C_CR1_TXIE; // allow tx emply interrupt so can send dest reg.
+		}
+		else{
+//			size+;
+			I2C_StartTX(I2C2, bqaddr, size, MASTERREAD);
+		}
+	}
+}
 
 void initI2C2(void){
 	// This function initializes I2C
