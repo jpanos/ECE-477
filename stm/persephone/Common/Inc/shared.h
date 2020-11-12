@@ -78,6 +78,19 @@ typedef struct _mavlink_shared_data {
 	char mastertxdata;
 	int i2cTargReg;
 	char i2cmode;
+	int regReading;
+	int VC1;
+	int VC2;
+	int VC3;
+	int VC4;
+	int VC5;
+	float cell1;
+	float cell2;
+	float cell3;
+	float cell4;
+	float total;
+	int bat;
+	char computeVoltageFlag
 } MavlinkSharedData;
 
 extern volatile MavlinkSharedData * const shared;

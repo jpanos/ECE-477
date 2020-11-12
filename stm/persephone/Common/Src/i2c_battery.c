@@ -4,6 +4,43 @@
 	extern int i2cTargReg;
 	extern char i2cmode;
 
+void computeVoltages(void){
+	shared->cell1 = shared->VC1 * 6.275 / (16384.0-1);
+	shared->cell2 = (shared->VC2-shared->VC1)  * 6.275 / (16384.0 -1);
+	shared->cell3 = (shared->VC3-shared->VC2)  * 6.275 / (16384.0 -1);
+	shared->cell4 = (shared->VC5-shared->VC4)  * 6.275 / (16384.0 -1);
+	shared->total = (shared->bat) * 6.275 / (16384.0-1);
+	// todo unmask handler here
+}
+
+void storeVData(void) {
+	int reg = shared->regReading;
+	if (reg == (0x0c+1)) // save c
+		shared->VC1 = shared->masterrxdata << 8;
+	else if (reg == (0x0d+1))
+		shared->VC1 += shared->masterrxdata;
+	else if (reg == (1+0x0e))
+		shared->VC2 = shared->masterrxdata <<8;
+	else if (reg ==(0x0f+1))
+		shared->VC2 += shared->masterrxdata;
+	else if (reg == (0x10+1))
+		shared->VC3 = shared->masterrxdata <<8;
+	else if (reg == (0x11+1))
+		shared->VC3 += shared-> masterrxdata;
+	else if (reg == (0x12+1))
+		shared->VC4 = shared->masterrxdata <<8;
+	else if (reg == (0x13+1))
+		shared->VC4 += shared->masterrxdata;
+	else if (reg == (0x14+1))
+		shared->VC5 = shared->masterrxdata<<8;
+	else if (reg == (0x2a))// save 0x15
+		shared->VC5 += shared->masterrxdata;
+	else if (reg == (0x2a+1))
+		shared->bat = shared->masterrxdata<<8;
+	else if (reg == (0xc)) // save 0x2b
+		shared->bat += shared->masterrxdata;
+}
+
 void I2C2battTalk(int writeMode, uint32_t regAddr, char byte){
 	// this function performs a read or write sequence to the bq76920
 	// right now enables 1 byte writing
@@ -23,10 +60,10 @@ void I2C2battTalk(int writeMode, uint32_t regAddr, char byte){
 		int size = 1;
 		if (shared->i2cTargReg != -1) {
 			I2C_StartTX(I2C2, bqaddr, size, MASTERWRITE);
-					I2C2->CR1 |= I2C_CR1_TXIE; // allow tx emply interrupt so can send dest reg.
+			I2C2->CR1 |= I2C_CR1_TXIE; // allow tx emply interrupt so can send dest reg.
 		}
 		else{
-//			size+;
+//			size+; currently reading 1 byte
 			I2C_StartTX(I2C2, bqaddr, size, MASTERREAD);
 		}
 	}
@@ -35,6 +72,18 @@ void I2C2battTalk(int writeMode, uint32_t regAddr, char byte){
 void initI2C2(void){
 	// This function initializes I2C
 	uint32_t OwnAddr = 0x52; // decide own address
+	shared->regReading = 0x0c;
+	shared->computeVoltageFlag = 0;
+	shared->VC1 = 0;
+	shared->VC2 = 0;
+	shared->VC3 = 0;
+	shared->VC4 = 0;
+	shared->VC5 = 0;
+	shared->bat = 0;
+	shared->cell1 = 0;
+	shared->cell2 = 0;
+	shared->cell3 = 0;
+	shared->cell4 = 0;
 	NVIC_EnableIRQ(I2C2_EV_IRQn);
 	//Enable I2C clock and select sysclock as clock source
 	RCC->APB1LENR |= RCC_APB1LENR_I2C2EN;
