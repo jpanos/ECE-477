@@ -120,7 +120,22 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 	// mavlink_initialize();
+
+	// initialize push button stuff
+	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN;
+	GPIOC->MODER &= ~(0xc000000);
+	GPIOB->ODR ^= GPIO_ODR_OD14;
+
+	// put yellow led in output mode
+	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOEEN;
+	GPIOE->MODER &= ~(GPIO_MODER_MODE1);
+	GPIOE->MODER |= GPIO_MODER_MODE1_0;
+	GPIOE->ODR &= ~GPIO_ODR_OD1;
+	// set_mavlink_msg_interval(MAVLINK_MSG_ID_PING, 10000);
+	//send_ping_message();
+	// set_mavlink_msg_interval(MAVLINK_MSG_ID_GLOBAL_POSITION_INT, 10000);
 	// set_mavlink_msg_interval(MAVLINK_MSG_ID_TRAJECTORY_REPRESENTATION_WAYPOINTS, 10000);
+	// spin_lock_core(HSEM_ID_CMD_BLOCK, 4, CMD_BLOCK_PROC_ID);
 
 	//  /* USER CODE END 2 */
 
@@ -133,8 +148,54 @@ int main(void)
 
 	//  /* Infinite loop */
 	//  /* USER CODE BEGIN WHILE */
+	uint8_t prev_val;
+	mavlink_message_t takeoff_msg;
+
+
 	while (1)
 	{
+		// a wait for loop used for my shitty edge detection
+		for (int i = 0; i <1000000; i++){}
+		if (prev_val == 0 && GPIOC->IDR != 0) {
+			float alt = shared->altitude_msl;
+			// yellow light on to show that in if statement
+			GPIOE->ODR |= GPIO_ODR_OD1;
+			msleep(5000);
+
+			// enable mode; not sure if this is needed
+			send_command_long(MAV_CMD_NAV_GUIDED_ENABLE, 0, 0, 0, 0, 0, 0, 0);
+			// set to offboard mode
+			send_command_long(MAV_CMD_DO_SET_MODE,
+												(MAV_MODE_FLAG_CUSTOM_MODE_ENABLED | MAV_MODE_FLAG_SAFETY_ARMED),
+												6, 0, 0, 0, 0, 0);
+			// a variabe, sets z setpoint to halz z velocit at
+			float z_setpoint = shared->pos_z - 0.5;
+			// set z velocity to -.7 m/s (z positive axis is down)
+			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, -.7, 0, 0, 0, 0, 0);
+			// arm drone
+			send_arm_disarm_message(1, 0);
+			msleep(500);
+
+			// wait for z pos to reach above setpoint
+			while (shared->pos_z > z_setpoint) {}
+			// turn off yellow led
+			GPIOE->ODR &= ~GPIO_ODR_OD1;
+			// 3rd argument is mask, when set to 0x1000 or 0x2000, puts drone in loiter mode
+			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, 0x3000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+			msleep(5000);
+
+			// set setpoint to go down at .7 m/s
+			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, .7, 0, 0, 0, 0, 0);
+
+			// when landed state is detected, turn on led and disarm drone
+			while (shared->landed_state != MAV_LANDED_STATE_ON_GROUND);
+			GPIOE->ODR |= GPIO_ODR_OD1;
+			send_arm_disarm_message(0, 0);
+		}
+		// other part of shitty edge detection
+		prev_val = GPIOC->IDR >> 8;
+    /* USER CODE END WHILE */
+    
 		/* USER CODE BEGIN 3 */
 		Touch_Button = check_sense();
 
