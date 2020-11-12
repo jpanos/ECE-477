@@ -19,6 +19,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "Pollinator.h"
+
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -136,7 +138,14 @@ int main(void)
 	// spin_lock_core(HSEM_ID_CMD_BLOCK, 4, CMD_BLOCK_PROC_ID);
 
 	//  /* USER CODE END 2 */
-	//
+
+	int angle = 3;
+
+	init_TIM();
+	static unsigned short Touch_Button = 0;
+	int start = 2;
+	TIM1->CCR1 = 2;
+
 	//  /* Infinite loop */
 	//  /* USER CODE BEGIN WHILE */
 	uint8_t prev_val;
@@ -185,7 +194,19 @@ int main(void)
 		}
 		// other part of shitty edge detection
 		prev_val = GPIOC->IDR >> 8;
+    /* USER CODE END WHILE */
+    
 		/* USER CODE BEGIN 3 */
+		Touch_Button = check_sense();
+
+		if(Touch_Button)
+		{
+			set_angle(2);
+		}
+		else
+		{
+			set_angle(3);
+		}
   }
   /* USER CODE END 3 */
 }
