@@ -123,26 +123,28 @@ int main(void)
 	// set_mavlink_msg_interval(MAVLINK_MSG_ID_TRAJECTORY_REPRESENTATION_WAYPOINTS, 10000);
 
 	//  /* USER CODE END 2 */
+
 	int angle = 3;
 
-	void init_TIM(void);
-
+	init_TIM();
 	static unsigned short Touch_Button = 0;
 	int start = 2;
+	TIM1->CCR1 = 2;
 
 	//  /* Infinite loop */
 	//  /* USER CODE BEGIN WHILE */
 	while (1)
 	{
 		/* USER CODE BEGIN 3 */
-		Touch_Button = check_sense;
+		Touch_Button = check_sense();
+
 		if(Touch_Button)
 		{
-			void set_angle(start);
+			set_angle(2);
 		}
 		else
 		{
-			void set_angle(angle);
+			set_angle(3);
 		}
   }
   /* USER CODE END 3 */

@@ -5,15 +5,15 @@
  *
   */
 
-#include "main.h"
+#include <stm32h7xx_hal.h>
 #include "Pollinator.h"
 
 
-	static unsigned short Touch_Button = 0;
-	int angle; //1 means neg 45 degree  3 means 45 degree
+	// static unsigned short Touch_Button = 0;
+	// int angle; //1 means neg 45 degree  3 means 45 degree
 
 int check_sense(void){
-	Touch_Button = ((GPIOB->IDR &= GPIO_IDR_ID8) == (1 >> 8));
+	int Touch_Button = ((GPIOB->IDR & GPIO_IDR_ID8) == GPIO_IDR_ID8);
 	return Touch_Button;
 }
 void set_angle(int angle){
