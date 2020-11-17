@@ -63,7 +63,7 @@ void I2C2battTalk(int writeMode, int regAddr, char byte){
 			I2C2->CR1 |= I2C_CR1_TXIE; // allow tx emply interrupt so can send dest reg.
 		}
 		else{
-//			size+; currently reading 1 byte
+			size++; //currently reading 1 byte
 			I2C_StartTX(I2C2, bqaddr, size, MASTERREAD);
 		}
 	}
