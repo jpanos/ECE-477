@@ -305,6 +305,8 @@ void TIM6_DAC_IRQHandler() {
 	}
 	if (shared->time_boot_ms % 1000 == 0 && ~(shared->computeVoltageFlag)){
 		// store prev cycle data here
+		shared->count = 8;
+		shared->voltage = (shared->bat) * 6.275 / (16383);
 		int reg = 0x2a;
 //		storeVData();
 		char send = 0x18;// byte to send
