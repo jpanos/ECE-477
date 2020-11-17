@@ -41,7 +41,7 @@ void storeVData(void) {
 		shared->bat += shared->masterrxdata;
 }
 
-void I2C2battTalk(int writeMode, uint32_t regAddr, char byte){
+void I2C2battTalk(int writeMode, int regAddr, char byte){
 	// this function performs a read or write sequence to the bq76920
 	// right now enables 1 byte writing
 	// inputs: MASTERREAD/MASTERWRITE, target register address, byte to write
@@ -51,7 +51,7 @@ void I2C2battTalk(int writeMode, uint32_t regAddr, char byte){
 	if (writeMode == MASTERWRITE)
 	{
 		shared->mastertxdata = byte; // byte to send
-		int size = 2; // send two bytes: reg and data
+		int size = 1; // send two bytes: reg and data
 		I2C_StartTX(I2C2, bqaddr, size, MASTERWRITE); // send the slave address and write request
 		I2C2->CR1 |= I2C_CR1_TXIE; // allow transmitter empty interrupt
 	}
@@ -135,6 +135,7 @@ void I2C_StartTX(I2C_TypeDef* I2C, uint32_t DevAddress, uint8_t Size, uint8_t Di
 		I2C->CR2 |= I2C_CR2_RD_WRN;
 	}
 	I2C->CR2 |= DevAddress <<1;
+	I2C->CR2 &= ~((0xFF)<<16);
 	I2C->CR2 |= Size<<16;
 	I2C->CR2 |= I2C_CR2_START; // send start bit
 	// PROCESS: sends start bit, starts clock, sends 7 bit address, holds low for for write/goes high for read,

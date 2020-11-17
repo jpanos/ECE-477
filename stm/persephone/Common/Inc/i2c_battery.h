@@ -12,7 +12,7 @@ By Jackie
 void initI2C2(void);
 void I2C2GPIOINIT(void);
 void I2C_StartTX(I2C_TypeDef* I2C, uint32_t DevAddress, uint8_t Size, uint8_t Direction);
-void I2C2battTalk(int writeMode, uint32_t regAddr, char byte);
+void I2C2battTalk(int writeMode, int regAddr, char byte);
 void computeVoltages(void);
 void storeVData(void);
 

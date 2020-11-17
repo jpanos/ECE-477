@@ -72,18 +72,24 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN 0 */
 
 void I2C2_EV_IRQHandler(void) { // I2C2 interrupt handler
-	if((I2C2->ISR & I2C_ISR_TXE) == I2C_ISR_TXE){ // need to transmit??
+	if((I2C2->ISR & I2C_ISR_RXNE)==I2C_ISR_RXNE){ // is reciever not empty
+		I2C2->CR1 &= ~I2C_CR1_RXIE; // disable rxne interrupt
+		shared->masterrxdata = I2C2->RXDR; // read th recieved data
+	}
+	else if((I2C2->ISR & I2C_ISR_TXE) == I2C_ISR_TXE){ // need to transmit??
 		//uint8_t data = 0xDD;
 		// TO DO: clear flag
 		if (shared->i2cTargReg != -1)
 		{
 			// send the target register address
+			I2C2->CR1 &= ~I2C_CR1_TXIE;
 			I2C2->TXDR = shared->i2cTargReg; // send the target reg addr
 			shared->i2cTargReg = -1;
 			if (shared->i2cmode == MASTERREAD){
-				I2C2->CR1 &= ~I2C_CR1_TXIE; // dont allow tx interrupt anymore
-				I2C2battTalk(MASTERREAD, -1, 0x0);
+				 // dont allow tx interrupt anymore
 				I2C2->CR1 |= I2C_CR1_RXIE;
+				I2C2battTalk(MASTERREAD, -1, 0x0);
+
 				//I2C2->CR1 |= I2C_CR1_RXIE; // allow rx not empty interrupt
 			}
 		}
@@ -92,10 +98,7 @@ void I2C2_EV_IRQHandler(void) { // I2C2 interrupt handler
 			I2C2->CR1 &= ~I2C_CR1_TXIE; // dont allow tx interrupt anymore
 		}
 	}
-	else if((I2C2->ISR & I2C_ISR_RXNE)==I2C_ISR_RXNE){ // is reciever not empty
-		I2C2->CR1 &= ~I2C_CR1_RXIE; // disable rxne interrupt
-		shared->masterrxdata = I2C2->RXDR; // read th recieved data
-	}
+
 }
 
 
