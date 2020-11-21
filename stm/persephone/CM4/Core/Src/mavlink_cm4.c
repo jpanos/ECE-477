@@ -125,8 +125,8 @@ uint8_t mavlink_initialize(void) {
 	shared->mav_mode_flag = 0;
 	// set position mask to ignore all
 	// shared->pos_type_mask = MVPSSC_POS_MASK_IGNORE_ALL;
-	shared->pos_type_mask = MVPSSC_POS_MASK_TAKEOFF;
-	shared->pos_mode |= MVPSSC_POS_MODE_EN;
+	shared->pos_type_mask = MVPSSC_POS_MASK_IGNORE_ALL;
+	shared->pos_mode = MVPSSC_POS_MODE_EN;
 	set_pos_freq(4);
 
 	_initialize_UART_DMA();
