@@ -204,7 +204,7 @@ int main(void)
 			// a variabe, sets z setpoint to halz z velocit at
 			float z_setpoint = shared->pos_z - 0.75;
 			// set z velocity to -.7 m/s (z positive axis is down)
-			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, -.7, 0, 0, 0, 0, 0);
+			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, -.7, 0, 0, 0, 0, 0);
 			// arm drone
 			send_arm_disarm_message(1, 0);
 			msleep(500);
@@ -248,7 +248,7 @@ int main(void)
 			set_hold(0);
 			msleep(5000);
 			// set setpoint to go down at .7 m/s
-			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, .7, 0, 0, 0, 0, 0);
+			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, .7, 0, 0, 0, 0, 0);
 
 			// when landed state is detected, turn on led and disarm drone
 			while (shared->landed_state != MAV_LANDED_STATE_ON_GROUND);
