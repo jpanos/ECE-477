@@ -71,6 +71,7 @@ int main(void)
   /* USER CODE END 1 */
 
 	/* USER CODE BEGIN Boot_Mode_Sequence_0 */
+	shared->mav_state = MAV_STATE_UNINIT;
   int32_t timeout;
   /* USER CODE END Boot_Mode_Sequence_0 */
 
@@ -139,12 +140,7 @@ int main(void)
 
 	//  /* USER CODE END 2 */
 
-	int angle = 3;
-
-	init_TIM();
-	static unsigned short Touch_Button = 0;
-	int start = 2;
-	TIM1->CCR1 = 2;
+  while (shared->mav_state == MAV_STATE_UNINIT) {}
 
 	//  /* Infinite loop */
 	//  /* USER CODE BEGIN WHILE */
@@ -166,10 +162,10 @@ int main(void)
 			send_command_long(MAV_CMD_NAV_GUIDED_ENABLE, 0, 0, 0, 0, 0, 0, 0);
 			// set to offboard mode
 			send_command_long(MAV_CMD_DO_SET_MODE,
-												(MAV_MODE_FLAG_CUSTOM_MODE_ENABLED | MAV_MODE_FLAG_SAFETY_ARMED),
-												6, 0, 0, 0, 0, 0);
+												PX4_MODE,
+												PX4_CUSTOM_MODE_OFFBOARD, 0, 0, 0, 0, 0);
 			// a variabe, sets z setpoint to halz z velocit at
-			float z_setpoint = shared->pos_z - 0.5;
+			float z_setpoint = shared->pos_z - 0.75;
 			// set z velocity to -.7 m/s (z positive axis is down)
 			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, -.7, 0, 0, 0, 0, 0);
 			// arm drone
@@ -181,9 +177,39 @@ int main(void)
 			// turn off yellow led
 			GPIOE->ODR &= ~GPIO_ODR_OD1;
 			// 3rd argument is mask, when set to 0x1000 or 0x2000, puts drone in loiter mode
-			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, 0x3000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+			set_hold(0);
 			msleep(5000);
+			// mav mask reference: yaw_rate yaw force afz | afy afx vz vy | vx z y x
 
+			// test 1: set velocity forward LOCAL frame
+			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT, 0, 0, 0, .5, 0, 0, 0, 0, 0, 0, 0);
+			msleep(4000);
+
+			// test 2: set velocity forward BODY frame
+			// set_pos_setpoint(0, MAV_FRAME_BODY_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT, 0, 0, 0, .5, 0, 0, 0, 0, 0, 0, 0);
+			// msleep(4000);
+
+			// float x_setpoint = shared->pos_x + 2;
+
+			// test 3: set position forward LOCAL frame
+			// set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_POSITION_SETPOINT, x_setpoint, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+			// while (shared->pos_x < x_setpoint) {}
+			// msleep(4000);
+
+			// test 4: set position forward BODY frame
+			// set_pos_setpoint(0, MAV_FRAME_BODY_NED, MVPSSC_POS_MASK_POSITION_SETPOINT, x_setpoint, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+			// while (shared->pos_x < x_setpoint) {}
+
+			// test 5: set position and velocity forward LOCAL frame
+			// set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, 0xdc4, x_setpoint, 0, 0, .5, 0, 0, 0, 0, 0, 0, 0);
+			// while (shared->pos_x < x_setpoint) {}
+
+			// test 6: set position and velocity forward BODY frame
+			// set_pos_setpoint(0, MAV_FRAME_BODY_NED, 0xdc4, x_setpoint, 0, 0, .5, 0, 0, 0, 0, 0, 0, 0);
+			// while (shared->pos_x < x_setpoint) {}
+
+			set_hold(0);
+			msleep(5000);
 			// set setpoint to go down at .7 m/s
 			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, .7, 0, 0, 0, 0, 0);
 

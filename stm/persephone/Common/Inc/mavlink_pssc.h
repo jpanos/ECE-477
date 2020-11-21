@@ -43,11 +43,13 @@
 #define MVPSSC_POS_MODE_EN 0x1
 
 #define MVPSSC_POS_MASK_IGNORE_ALL 0x0dff
-//#define MVPSSC_POS_MASK_TAKEOFF 0x1ddb
-#define MVPSSC_POS_MASK_TAKEOFF 0x0df8
-#define MVPSSC_POS_MASK_LANDING 0x0df8
-#define MVPSSC_POS_POSITION_SETPOINT 0x0df8
-#define MVPSSC_POS_VELOCITY_SETPOINT 0x0dc7
+#define MVPSSC_POS_MASK_POSITION_SETPOINT 0x0df8
+#define MVPSSC_POS_MASK_VELOCITY_SETPOINT 0x0dc7
+
+#define PX4_MODE (MAV_MODE_FLAG_CUSTOM_MODE_ENABLED | MAV_MODE_FLAG_SAFETY_ARMED)
+#define PX4_CUSTOM_MODE_OFFBOARD 6
+#define PX4_CUSTOM_MODE_AUTO 4
+#define PX4_CUSTOM_AUTO_SUBMODE_LOITER 3
 
 extern mavlink_system_t mavlink_system;
 extern mavlink_system_t mavlink_autopilot;
@@ -86,6 +88,8 @@ uint8_t send_arm_disarm_message(uint8_t armval, uint8_t force);
 
 uint8_t set_pos_setpoint(uint32_t procID, uint8_t frame, uint16_t mask,
 		float x, float y, float z, float vx, float vy, float vz, float afx, float afy, float afz, float yaw, float rate);
+uint8_t set_hold(uint32_t procID);
+uint8_t set_hold1(uint32_t procID);
 
 uint8_t takeoff(float meters);
 
