@@ -303,12 +303,16 @@ void TIM6_DAC_IRQHandler() {
 	if (shared->time_boot_ms % 50 == 0 && ((DMA1_Stream0->CR & 0x1) != 1)) {
 		send_next_msg();
 	}
-	if (shared->time_boot_ms % 1000 == 0 && ~(shared->computeVoltageFlag)){
+	if (shared->time_boot_ms % 250 == 0 && ~(shared->computeVoltageFlag)){
 		// store prev cycle data here
-		shared->count = 8;
-		shared->voltage = (shared->bat) * 6.275 / (16383);
-		int reg = 0x2a;
-//		storeVData();
+//		shared->count = 8;
+//		shared->voltage = (shared->bat) * 6.275 / (16383);
+		shared->regReading = shared->regReading + 1;
+		if (shared->regReading == 0x2c)
+			shared->regReading = 0x2a;
+//		shared->regReading = 0x2b;
+		//		storeVData();
+		int reg = shared->regReading;
 		char send = 0x18;// byte to send
 		I2C2battTalk(MASTERREAD,reg,send);
 //		reg++;

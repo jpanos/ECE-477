@@ -63,7 +63,7 @@ void I2C2battTalk(int writeMode, int regAddr, char byte){
 			I2C2->CR1 |= I2C_CR1_TXIE; // allow tx emply interrupt so can send dest reg.
 		}
 		else{
-			size++; //currently reading 1 byte
+//			size++; //currently reading 1 byte
 			I2C_StartTX(I2C2, bqaddr, size, MASTERREAD);
 		}
 	}
@@ -72,7 +72,7 @@ void I2C2battTalk(int writeMode, int regAddr, char byte){
 void initI2C2(void){
 	// This function initializes I2C
 	uint32_t OwnAddr = 0x52; // decide own address
-	shared->regReading = 0x0c;
+	shared->regReading = 0x2a-1;
 	shared->computeVoltageFlag = 0;
 	shared->VC1 = 0;
 	shared->VC2 = 0;

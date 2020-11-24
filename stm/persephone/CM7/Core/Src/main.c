@@ -73,19 +73,26 @@ void SystemClock_Config(void);
 
 void I2C2_EV_IRQHandler(void) { // I2C2 interrupt handler
 	if((I2C2->ISR & I2C_ISR_RXNE)==I2C_ISR_RXNE){ // is reciever not empty
-		I2C2->CR1 &= ~I2C_CR1_RXIE; // disable rxne interrupt
 		shared->masterrxdata = I2C2->RXDR; // read th recieved data
-		if (shared->count == 8){
-			shared->bat = shared->masterrxdata << 8;
-			shared->count = shared->count - 8;
+		I2C2->CR1 &= ~I2C_CR1_RXIE;
+		if (shared->regReading == 0x2a){
+			shared->bat &= ~(0xFF)<<8;
+			shared->bat |= shared->masterrxdata <<8;
 		}
-		else {
+		else if(shared->regReading == 0x2b){
+			shared->bat &= ~(0xFF);
 			shared->bat |= shared->masterrxdata;
 		}
+		//		if (shared->count == 8){
+//			shared->bat = shared->masterrxdata << 8;
+//			shared->count = shared->count - 8;
+//		}
+//		else {
+//			I2C2->CR1 &= ~I2C_CR1_RXIE; // disable rxne interrupt
+//			shared->bat |= shared->masterrxdata;
+//		}
 	}
 	else if((I2C2->ISR & I2C_ISR_TXE) == I2C_ISR_TXE){ // need to transmit??
-		//uint8_t data = 0xDD;
-		// TO DO: clear flag
 		if (shared->i2cTargReg != -1)
 		{
 			// send the target register address
