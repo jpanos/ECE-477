@@ -198,11 +198,9 @@ int main(void)
 			// enable mode; not sure if this is needed
 			send_command_long(MAV_CMD_NAV_GUIDED_ENABLE, 0, 0, 0, 0, 0, 0, 0);
 			// set to offboard mode
-			send_command_long(MAV_CMD_DO_SET_MODE,
-												PX4_MODE,
-												PX4_CUSTOM_MODE_OFFBOARD, 0, 0, 0, 0, 0);
+			set_offboard(0);
 			// a variabe, sets z setpoint to halz z velocit at
-			float z_setpoint = shared->pos_z - 0.75;
+			float z_setpoint = shared->pos_z - 1.25;
 			// set z velocity to -.7 m/s (z positive axis is down)
 			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, -.7, 0, 0, 0, 0, 0);
 			// arm drone
@@ -214,24 +212,26 @@ int main(void)
 			// turn off yellow led
 			GPIOE->ODR &= ~GPIO_ODR_OD1;
 			// 3rd argument is mask, when set to 0x1000 or 0x2000, puts drone in loiter mode
-			set_hold(0);
+			set_hold1(0);
 			msleep(5000);
+			set_offboard(0);
 			// mav mask reference: yaw_rate yaw force afz | afy afx vz vy | vx z y x
 
 			// test 1: set velocity forward LOCAL frame
-			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT, 0, 0, 0, .5, 0, 0, 0, 0, 0, 0, 0);
-			msleep(4000);
+			// set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT, 0, 0, 0, .5, 0, 0, 0, 0, 0, 0, 0);
+			// msleep(4000);
 
 			// test 2: set velocity forward BODY frame
 			// set_pos_setpoint(0, MAV_FRAME_BODY_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT, 0, 0, 0, .5, 0, 0, 0, 0, 0, 0, 0);
 			// msleep(4000);
 
-			// float x_setpoint = shared->pos_x + 2;
+			float x_setpoint = shared->pos_x + 2;
 
 			// test 3: set position forward LOCAL frame
-			// set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_POSITION_SETPOINT, x_setpoint, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-			// while (shared->pos_x < x_setpoint) {}
-			// msleep(4000);
+			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_POSITION_SETPOINT, x_setpoint, 0, shared->pos_z, 0, 0, 0, 0, 0, 0, 0, 0);
+			msleep(5000);
+			while (shared->pos_x > x_setpoint) {}
+			//msleep(4000);
 
 			// test 4: set position forward BODY frame
 			// set_pos_setpoint(0, MAV_FRAME_BODY_NED, MVPSSC_POS_MASK_POSITION_SETPOINT, x_setpoint, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -245,8 +245,9 @@ int main(void)
 			// set_pos_setpoint(0, MAV_FRAME_BODY_NED, 0xdc4, x_setpoint, 0, 0, .5, 0, 0, 0, 0, 0, 0, 0);
 			// while (shared->pos_x < x_setpoint) {}
 
-			set_hold(0);
+			set_hold1(0);
 			msleep(5000);
+			set_offboard(0);
 			// set setpoint to go down at .7 m/s
 			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, .7, 0, 0, 0, 0, 0);
 

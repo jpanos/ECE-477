@@ -88,6 +88,7 @@ uint8_t send_arm_disarm_message(uint8_t armval, uint8_t force);
 
 uint8_t set_pos_setpoint(uint32_t procID, uint8_t frame, uint16_t mask,
 		float x, float y, float z, float vx, float vy, float vz, float afx, float afy, float afz, float yaw, float rate);
+uint8_t set_offboard(uint32_t procID);
 uint8_t set_hold(uint32_t procID);
 uint8_t set_hold1(uint32_t procID);
 
