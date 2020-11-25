@@ -306,8 +306,10 @@ void TIM6_DAC_IRQHandler() {
 	if (shared->time_boot_ms % 1000 == 0){
 		storeVData(); // store the cell data
 		shared->regReading = shared->regReading + 1;
-		if (shared->regReading == 0x16)
+		if (shared->regReading == 0x16){
 			shared->regReading = 0x0c; // go back to start.
+			shared->computeVoltageFlag = 1;
+		}
 		int reg = shared->regReading;
 		I2C2battTalk(MASTERREAD,reg, 0x18);
 //		shared->regReading = shared->regReading + 1;
@@ -317,9 +319,10 @@ void TIM6_DAC_IRQHandler() {
 //		char send = 0x18;// byte to send
 //		I2C2battTalk(MASTERREAD,reg,send);
 	}
-	if (shared->time_boot_ms % 1000 == 0){
-//		int bat = shared->bat;
-//		shared->voltage = (shared->bat) * 6.275 / 16383;
+	if (shared->computeVoltageFlag){
+		shared->computeVoltageFlag = 0;
+		shared->bat = shared->VC1 + shared->VC2 + shared->VC3 + shared->VC5;
+		shared->voltage = (shared->bat) * 6.275 / 16383;
 	}
 
 }
