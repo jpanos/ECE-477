@@ -15,30 +15,42 @@ void computeVoltages(void){
 
 void storeVData(void) {
 	int reg = shared->regReading;
-	if (reg == (0x0c+1)) // save c
+	int data = shared->masterrxdata;
+	// vc1
+	if (reg == (0x0c)) {// save c
 		shared->VC1 = shared->masterrxdata << 8;
-	else if (reg == (0x0d+1))
-		shared->VC1 += shared->masterrxdata;
-	else if (reg == (1+0x0e))
+		shared->VC1 &= ~(0x3<<14);
+	}
+	else if (reg == (0x0d))
+		shared->VC1 |= shared->masterrxdata;
+	//vc2
+	else if (reg == (0x0e)){
 		shared->VC2 = shared->masterrxdata <<8;
-	else if (reg ==(0x0f+1))
-		shared->VC2 += shared->masterrxdata;
-	else if (reg == (0x10+1))
+		shared->VC2 &= ~(0x3<<14);
+	}
+	else if (reg ==(0x0f))
+		shared->VC2 |= shared->masterrxdata;
+	//vc3
+	else if (reg == (0x10)){
 		shared->VC3 = shared->masterrxdata <<8;
-	else if (reg == (0x11+1))
-		shared->VC3 += shared-> masterrxdata;
-	else if (reg == (0x12+1))
+		shared->VC3 &= ~(0x3<<14);
+	}
+	else if (reg == (0x11))
+		shared->VC3 |= shared-> masterrxdata;
+	//vc4
+	else if (reg == (0x12)){
 		shared->VC4 = shared->masterrxdata <<8;
-	else if (reg == (0x13+1))
-		shared->VC4 += shared->masterrxdata;
-	else if (reg == (0x14+1))
+		shared->VC4 &= ~(0x3<<14);
+	}
+	else if (reg == (0x13))
+		shared->VC4 |= shared->masterrxdata;
+	//vc5
+	else if (reg == (0x14)){
 		shared->VC5 = shared->masterrxdata<<8;
-	else if (reg == (0x2a))// save 0x15
-		shared->VC5 += shared->masterrxdata;
-	else if (reg == (0x2a+1))
-		shared->bat = shared->masterrxdata<<8;
-	else if (reg == (0xc)) // save 0x2b
-		shared->bat += shared->masterrxdata;
+		shared->VC5 &= ~(0x3<<14);
+	}
+	else if (reg == (0x15))// save 0x15
+		shared->VC5 |= shared->masterrxdata;
 }
 
 void I2C2battTalk(int writeMode, int regAddr, char byte){
@@ -72,7 +84,7 @@ void I2C2battTalk(int writeMode, int regAddr, char byte){
 void initI2C2(void){
 	// This function initializes I2C
 	uint32_t OwnAddr = 0x52; // decide own address
-	shared->regReading = 0x2a-1;
+	shared->regReading = 0x0b;
 	shared->computeVoltageFlag = 0;
 	shared->VC1 = 0;
 	shared->VC2 = 0;

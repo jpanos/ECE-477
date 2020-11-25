@@ -75,14 +75,17 @@ void I2C2_EV_IRQHandler(void) { // I2C2 interrupt handler
 	if((I2C2->ISR & I2C_ISR_RXNE)==I2C_ISR_RXNE){ // is reciever not empty
 		shared->masterrxdata = I2C2->RXDR; // read th recieved data
 		I2C2->CR1 &= ~I2C_CR1_RXIE;
+		/* uncomment for back to c4 stuff
 		if (shared->regReading == 0x2a){
-			shared->bat &= ~(0xFF)<<8;
+			shared->bat &= ~(0xFF<<8);
 			shared->bat |= shared->masterrxdata <<8;
 		}
 		else if(shared->regReading == 0x2b){
 			shared->bat &= ~(0xFF);
 			shared->bat |= shared->masterrxdata;
 		}
+		*/ // end uncomment
+
 		//		if (shared->count == 8){
 //			shared->bat = shared->masterrxdata << 8;
 //			shared->count = shared->count - 8;
@@ -179,11 +182,68 @@ int main(void)
 
 	initI2C2(); 				// init i2c2
 	I2C2GPIOINIT();
-	//int reg = 0x04;
-	//char send = 0x18;// byte to send
-	/*I2C2battTalk(MASTERWRITE, reg, send); //todo: send dest reg addr
-	HAL_Delay(2);
-	I2C2battTalk(MASTERREAD, reg, send); //todo: send dest reg addr
+	/*
+	int send = 0x18;
+	int reg = 0x0c;
+	// reac VC1
+	I2C2battTalk(MASTERREAD,reg,send);
+	HAL_Delay(1);
+	reg++;
+	shared->VC1 = shared->masterrxdata << 8;
+	shared->VC1 &= ~(0x3<<14);
+
+	I2C2battTalk(MASTERREAD,reg,send);
+	HAL_Delay(1);
+	reg++;
+	shared->VC1 |= shared->masterrxdata;
+
+	// read VC2hi
+	I2C2battTalk(MASTERREAD,reg,send);
+	HAL_Delay(1);
+	reg++;
+	shared->VC2 = shared->masterrxdata << 8;
+	shared->VC2 &= ~(0x3<<14);
+
+	I2C2battTalk(MASTERREAD,reg,send);
+	HAL_Delay(1);
+	reg++;
+	shared->VC2 |= shared->masterrxdata;
+
+	// read VC3hi
+	I2C2battTalk(MASTERREAD,reg,send);
+	HAL_Delay(1);
+	reg++;
+	shared->VC3 = shared->masterrxdata << 8;
+	shared->VC3 &= ~(0x3<<14);
+
+	I2C2battTalk(MASTERREAD,reg,send);
+	HAL_Delay(1);
+	reg++;
+	shared->VC3 |= shared->masterrxdata;
+
+	// read VC4hi
+	I2C2battTalk(MASTERREAD,reg,send);
+	HAL_Delay(1);
+	reg++;
+	shared->VC4 = shared->masterrxdata << 8;
+	shared->VC4 &= ~(0x3<<14);
+
+	I2C2battTalk(MASTERREAD,reg,send);
+	HAL_Delay(1);
+	reg++;
+	shared->VC4 |= shared->masterrxdata;
+
+	// read VC5hi
+	I2C2battTalk(MASTERREAD,reg,send);
+	HAL_Delay(1);
+	reg++;
+	shared->VC5 = shared->masterrxdata << 8;
+	shared->VC5 &= ~(0x3<<14);
+
+	I2C2battTalk(MASTERREAD,reg,send);
+	HAL_Delay(1);
+	reg++;
+	shared->VC5 |= shared->masterrxdata;
 	*/
 	//  /* USER CODE END 2 */
 	//

@@ -303,32 +303,24 @@ void TIM6_DAC_IRQHandler() {
 	if (shared->time_boot_ms % 50 == 0 && ((DMA1_Stream0->CR & 0x1) != 1)) {
 		send_next_msg();
 	}
-	if (shared->time_boot_ms % 250 == 0 && ~(shared->computeVoltageFlag)){
-		// store prev cycle data here
-//		shared->count = 8;
-//		shared->voltage = (shared->bat) * 6.275 / (16383);
+	if (shared->time_boot_ms % 1000 == 0){
+		storeVData(); // store the cell data
 		shared->regReading = shared->regReading + 1;
-		if (shared->regReading == 0x2c)
-			shared->regReading = 0x2a;
-//		shared->regReading = 0x2b;
-		//		storeVData();
+		if (shared->regReading == 0x16)
+			shared->regReading = 0x0c; // go back to start.
 		int reg = shared->regReading;
-		char send = 0x18;// byte to send
-		I2C2battTalk(MASTERREAD,reg,send);
-//		reg++;
-//		if (reg == 0x16)
-//			reg = 0x2a;
-//		if (reg == 0x2c) {
-//			reg = 0xc;
-//			shared->computeVoltageFlag = 1; // set compute voltage flag
-//		}
-//		shared->regReading = reg;
+		I2C2battTalk(MASTERREAD,reg, 0x18);
+//		shared->regReading = shared->regReading + 1;
+//		if (shared->regReading == 0x2c)
+//			shared->regReading = 0x2a;
+//		int reg = shared->regReading;
+//		char send = 0x18;// byte to send
+//		I2C2battTalk(MASTERREAD,reg,send);
 	}
-//	if (shared->computeVoltageFlag) {
-//		storeVData();
-//		shared->computeVoltageFlag = 0; // clear the flag
-//		computeVoltages();
-//	}
+	if (shared->time_boot_ms % 1000 == 0){
+//		int bat = shared->bat;
+//		shared->voltage = (shared->bat) * 6.275 / 16383;
+	}
 
 }
 
