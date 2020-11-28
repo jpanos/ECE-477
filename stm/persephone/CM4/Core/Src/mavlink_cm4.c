@@ -318,6 +318,7 @@ void TIM6_DAC_IRQHandler() {
 		shared->bat = shared->VC1 + shared->VC2 + shared->VC3 + shared->VC5;
 		shared->voltage = (shared->bat) * 6.275 / 16383;
 		getBatPercent();
+	    sendNano();
 	}
 
 }

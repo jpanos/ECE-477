@@ -4,6 +4,11 @@
 	extern int i2cTargReg;
 	extern char i2cmode;
 
+	typedef struct _txdata {
+			int battPercent;
+			float voltage;
+		}Txdata;
+
 	float batValLUT[100] =
 	{
 			16.40705651,
@@ -107,6 +112,19 @@
 			10.94392884,
 			10.55510682
 	};
+
+void sendNano(void){
+	// send charachters to nano
+	Txdata txdata;
+	txdata.battPercent = shared->batPercentRemain;
+	txdata.voltage = shared->voltage;
+	char * structaddr = (char *) &txdata;
+	for (int k = 0;  k < sizeof(txdata); k++){
+		while((USART3->ISR & USART_ISR_TC) != USART_ISR_TC){};
+		USART3->TDR = structaddr[k];
+	}
+}
+
 
 void getBatPercent(void) {
 	int k = 1;
@@ -257,6 +275,27 @@ void I2C2GPIOINIT(void){
 	GPIOB->AFR[1] |= 4<<12;// set to af4 (pb11 is I2C SDA)
 	GPIOB->AFR[1] |= 4<<16;// set to af4 (pb12 is I2C SMBA)
 }// end i2c2gpioinit
+
+
+void initUART(void){
+	//pc10 is uart3tx
+	//pc11 is uart3rx
+	// AF 7
+	// 115200 BAUDRATE
+	RCC->APB1LENR |= RCC_APB1LENR_USART3EN; // enable clock
+	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN;
+
+	//set gpio
+	GPIOC->MODER &= ~(GPIO_MODER_MODE10|GPIO_MODER_MODE11);
+	GPIOC->MODER |= GPIO_MODER_MODE10_1 | GPIO_MODER_MODE11_1; // make alternate functions
+	GPIOC->OTYPER &= ~(0x3<<10); // make push pull
+	GPIOC->AFR[1] &= ~(0xFF<<8);
+	GPIOC->AFR[1] |= (7<<8) | (7<<12); // set to AF7.
+
+	// config uart
+	USART3->BRR = 115200; // set the baudrate
+	USART3->CR1 |= USART_CR1_UE | USART_CR1_TE; // enable transmit and enable peripheral
+}
 
 void I2C_StartTX(I2C_TypeDef* I2C, uint32_t DevAddress, uint8_t Size, uint8_t Direction) {
 	I2C->CR2 &= ~(I2C_CR2_SADD | I2C_CR2_NBYTES | I2C_CR2_RELOAD|I2C_CR2_RD_WRN|I2C_CR2_ADD10);

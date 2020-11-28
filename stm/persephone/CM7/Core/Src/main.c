@@ -163,6 +163,7 @@ int main(void)
 
 	initI2C2(); 				// init i2c2
 	I2C2GPIOINIT();
+	initUART();
 	/*
 	int send = 0x18;
 	int reg = 0x0c;

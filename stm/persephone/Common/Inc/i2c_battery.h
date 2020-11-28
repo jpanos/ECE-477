@@ -16,6 +16,7 @@ void I2C2battTalk(int writeMode, int regAddr, char byte);
 void computeVoltages(void);
 void storeVData(void);
 void getBatPercent(void);
+void initUART(void);
 
 extern float batValLUT[100];
 
