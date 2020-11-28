@@ -132,8 +132,11 @@ uint8_t set_pos_setpoint(uint32_t procID, uint8_t frame, uint16_t mask,
 }
 
 uint8_t set_offboard(uint32_t procID) {
+	uint8_t result = MAV_RESULT_FAILED;
 	send_command_long(MAV_CMD_NAV_GUIDED_ENABLE, 0, 0, 0, 0, 0, 0, 0);
-	send_command_long(MAV_CMD_DO_SET_MODE, PX4_MODE, PX4_CUSTOM_MODE_OFFBOARD, 0, 0, 0, 0, 0);
+	while (result != MAV_RESULT_ACCEPTED) {
+		result = send_command_long(MAV_CMD_DO_SET_MODE, PX4_MODE, PX4_CUSTOM_MODE_OFFBOARD, 0, 0, 0, 0, 0);
+	}
 	return MVPSSC_SUCCESS;
 }
 
@@ -148,6 +151,12 @@ uint8_t set_hold1(uint32_t procID) {
 										PX4_MODE,
 										PX4_CUSTOM_MODE_AUTO, PX4_CUSTOM_AUTO_SUBMODE_LOITER, 0, 0, 0, 0);
 	set_pos_setpoint(procID, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_POSITION_SETPOINT, shared->pos_x, shared->pos_y, shared->pos_z,
+										0, 0, 0, 0, 0, 0, 0, 0);
+	return MVPSSC_SUCCESS;
+}
+
+uint8_t set_hold2(uint32_t procID) {
+	set_pos_setpoint(procID, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT, 0, 0, 0,
 										0, 0, 0, 0, 0, 0, 0, 0);
 	return MVPSSC_SUCCESS;
 }
