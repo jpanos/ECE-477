@@ -8,10 +8,10 @@
 #ifndef INC_POLLINATOR_H_
 #define INC_POLLINATOR_H_
 
-void init_TIM(void);
 int check_sense(void);
 void set_angle(int);
 
-
+void init_servoPWM(void);
+void init_touchISR(void);
 
 #endif /* INC_POLLINATOR_H_ */
