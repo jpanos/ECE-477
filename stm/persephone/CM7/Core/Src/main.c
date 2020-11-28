@@ -176,11 +176,22 @@ int main(void)
 	I2C2GPIOINIT();
 	initUART();
 
-  while (shared->mav_state == MAV_STATE_UNINIT) {}
+	// initialize push button stuff
+	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN;
+	GPIOC->MODER &= ~(0xc000000);
+	GPIOB->ODR ^= GPIO_ODR_OD14;
+
+	// put yellow led in output mode
+	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOEEN;
+	GPIOE->MODER &= ~(GPIO_MODER_MODE1);
+	GPIOE->MODER |= GPIO_MODER_MODE1_0;
+	GPIOE->ODR &= ~GPIO_ODR_OD1;
+
 	//  /* USER CODE END 2 */
 
 	//  /* Infinite loop */
 	//  /* USER CODE BEGIN WHILE */
+  while (shared->mav_state == MAV_STATE_UNINIT) {}
 	uint8_t prev_val;
 	mavlink_message_t takeoff_msg;
 
@@ -212,9 +223,10 @@ int main(void)
 			// turn off yellow led
 			GPIOE->ODR &= ~GPIO_ODR_OD1;
 			// 3rd argument is mask, when set to 0x1000 or 0x2000, puts drone in loiter mode
-			set_hold1(0);
+			set_hold2(0);
 			msleep(5000);
-			set_offboard(0);
+			// set_offboard(0);
+
 			// mav mask reference: yaw_rate yaw force afz | afy afx vz vy | vx z y x
 
 			// test 1: set velocity forward LOCAL frame
@@ -222,19 +234,20 @@ int main(void)
 			// msleep(4000);
 
 			// test 2: set velocity forward BODY frame
-			// set_pos_setpoint(0, MAV_FRAME_BODY_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT, 0, 0, 0, .5, 0, 0, 0, 0, 0, 0, 0);
-			// msleep(4000);
+			set_pos_setpoint(0, MAV_FRAME_BODY_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT, 0, 0, 0, .5, 0, 0, 0, 0, 0, 0, 0);
+			msleep(10000);
 
-			float x_setpoint = shared->pos_x + 2;
+			// float x_setpoint = shared->pos_x + 2;
 
 			// test 3: set position forward LOCAL frame
-			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_POSITION_SETPOINT, x_setpoint, 0, shared->pos_z, 0, 0, 0, 0, 0, 0, 0, 0);
-			msleep(5000);
-			while (shared->pos_x > x_setpoint) {}
+			// set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_POSITION_SETPOINT, x_setpoint, shared->pos_set_y, shared->pos_set_z, 0, 0, 0, 0, 0, 0, 0, 0);
+			// msleep(5000);
+			// while (shared->pos_x > x_setpoint) {}
 			//msleep(4000);
 
 			// test 4: set position forward BODY frame
-			// set_pos_setpoint(0, MAV_FRAME_BODY_NED, MVPSSC_POS_MASK_POSITION_SETPOINT, x_setpoint, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+			// set_pos_setpoint(0, MAV_FRAME_BODY_NED, MVPSSC_POS_MASK_POSITION_SETPOINT, x_setpoint, shared->pos_set_y, shared->pos_set_z, 0, 0, 0, 0, 0, 0, 0, 0);
+			// msleep(5000);
 			// while (shared->pos_x < x_setpoint) {}
 
 			// test 5: set position and velocity forward LOCAL frame
@@ -245,9 +258,10 @@ int main(void)
 			// set_pos_setpoint(0, MAV_FRAME_BODY_NED, 0xdc4, x_setpoint, 0, 0, .5, 0, 0, 0, 0, 0, 0, 0);
 			// while (shared->pos_x < x_setpoint) {}
 
-			set_hold1(0);
+			set_hold2(0);
 			msleep(5000);
-			set_offboard(0);
+			// set_offboard(0);
+
 			// set setpoint to go down at .7 m/s
 			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, .7, 0, 0, 0, 0, 0);
 
@@ -312,7 +326,10 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void TIM16_IRQHandler() {
+	uint16_t val = TIM16->CCR1;
+	GPIOB->ODR ^= GPIO_ODR_OD0;
+}
 /* USER CODE END 4 */
 
 /**
