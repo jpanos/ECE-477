@@ -137,14 +137,19 @@ int main(void)
 	// set_mavlink_msg_interval(MAVLINK_MSG_ID_TRAJECTORY_REPRESENTATION_WAYPOINTS, 10000);
 	// spin_lock_core(HSEM_ID_CMD_BLOCK, 4, CMD_BLOCK_PROC_ID);
 
+	// touch edge detection interrupt
+	init_servoPWM();
+	set_angle(2);
+	init_touchISR();
+	NVIC_EnableIRQ(TIM16_IRQn);
+	// init green LED for test
+	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOBEN;
+	GPIOB->MODER &= ~(GPIO_MODER_MODE0);
+	GPIOB->MODER |= GPIO_MODER_MODE0_0;
+	GPIOB->ODR &= ~GPIO_ODR_OD0;
+
+
 	//  /* USER CODE END 2 */
-
-	int angle = 3;
-
-	init_TIM();
-	static unsigned short Touch_Button = 0;
-	int start = 2;
-	TIM1->CCR1 = 2;
 
 	//  /* Infinite loop */
 	//  /* USER CODE BEGIN WHILE */
@@ -197,16 +202,7 @@ int main(void)
     /* USER CODE END WHILE */
     
 		/* USER CODE BEGIN 3 */
-		Touch_Button = check_sense();
 
-		if(Touch_Button)
-		{
-			set_angle(2);
-		}
-		else
-		{
-			set_angle(3);
-		}
   }
   /* USER CODE END 3 */
 }
