@@ -15,5 +15,8 @@ void I2C_StartTX(I2C_TypeDef* I2C, uint32_t DevAddress, uint8_t Size, uint8_t Di
 void I2C2battTalk(int writeMode, int regAddr, char byte);
 void computeVoltages(void);
 void storeVData(void);
+void getBatPercent(void);
+
+extern float batValLUT[100];
 
 #endif /* INC_I2C_BATTERY_H */

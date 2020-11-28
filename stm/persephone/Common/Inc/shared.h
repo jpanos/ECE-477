@@ -93,6 +93,7 @@ typedef struct _mavlink_shared_data {
 	char computeVoltageFlag;
 	char count;
 	float voltage;
+	int batPercentRemain;
 } MavlinkSharedData;
 
 extern volatile MavlinkSharedData * const shared;

@@ -312,17 +312,12 @@ void TIM6_DAC_IRQHandler() {
 		}
 		int reg = shared->regReading;
 		I2C2battTalk(MASTERREAD,reg, 0x18);
-//		shared->regReading = shared->regReading + 1;
-//		if (shared->regReading == 0x2c)
-//			shared->regReading = 0x2a;
-//		int reg = shared->regReading;
-//		char send = 0x18;// byte to send
-//		I2C2battTalk(MASTERREAD,reg,send);
 	}
 	if (shared->computeVoltageFlag){
 		shared->computeVoltageFlag = 0;
 		shared->bat = shared->VC1 + shared->VC2 + shared->VC3 + shared->VC5;
 		shared->voltage = (shared->bat) * 6.275 / 16383;
+		getBatPercent();
 	}
 
 }
