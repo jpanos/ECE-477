@@ -28,6 +28,12 @@
 
 // a struct to hold all shared data between both cores
 // we are limited to size of SRAM3 which is ~32KB
+typedef struct _point{
+	float x;
+	float y;
+	float z;
+} Point;
+
 typedef struct _mavlink_shared_data {
 
 //////////////SYSTEM DATA START/////////////////////
@@ -94,6 +100,11 @@ typedef struct _mavlink_shared_data {
 	char count;
 	float voltage;
 	int batPercentRemain;
+
+// usart stuff
+	Point flowercoord;
+	char usartct;
+	uint8_t usartbuff[12];
 } MavlinkSharedData;
 
 extern volatile MavlinkSharedData * const shared;
