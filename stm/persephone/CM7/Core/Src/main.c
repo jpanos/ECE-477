@@ -36,14 +36,6 @@
 #define MASTERWRITE 0
 #define MASTERREAD  1
 #define SYS_STAT 0x00
-#define VC1_HI 0x0C
-#define VC1_LO 0x0D
-#define VC2_HI 0x0E
-#define VC2_LO 0x0F
-#define VC3_HI 0x10
-#define VC3_LO 0x11
-#define VC4_HI 0x12
-#define VC4_LO 0x13
 #define HSEM_ID_0 (0U) /* HW semaphore 0*/
 /* USER CODE END PD */
 
@@ -56,10 +48,6 @@
 
 /* USER CODE BEGIN PV */
 	char slaverxdata = 0; // create a global receive data variable
-//	char masterrxdata = 0;
-//	char mastertxdata = 0;
-//	int i2cTargReg = -1;
-//	char i2cmode = MASTERWRITE;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -164,69 +152,7 @@ int main(void)
 	initI2C2(); 				// init i2c2
 	I2C2GPIOINIT();
 	initUART();
-	/*
-	int send = 0x18;
-	int reg = 0x0c;
-	// reac VC1
-	I2C2battTalk(MASTERREAD,reg,send);
-	HAL_Delay(1);
-	reg++;
-	shared->VC1 = shared->masterrxdata << 8;
-	shared->VC1 &= ~(0x3<<14);
 
-	I2C2battTalk(MASTERREAD,reg,send);
-	HAL_Delay(1);
-	reg++;
-	shared->VC1 |= shared->masterrxdata;
-
-	// read VC2hi
-	I2C2battTalk(MASTERREAD,reg,send);
-	HAL_Delay(1);
-	reg++;
-	shared->VC2 = shared->masterrxdata << 8;
-	shared->VC2 &= ~(0x3<<14);
-
-	I2C2battTalk(MASTERREAD,reg,send);
-	HAL_Delay(1);
-	reg++;
-	shared->VC2 |= shared->masterrxdata;
-
-	// read VC3hi
-	I2C2battTalk(MASTERREAD,reg,send);
-	HAL_Delay(1);
-	reg++;
-	shared->VC3 = shared->masterrxdata << 8;
-	shared->VC3 &= ~(0x3<<14);
-
-	I2C2battTalk(MASTERREAD,reg,send);
-	HAL_Delay(1);
-	reg++;
-	shared->VC3 |= shared->masterrxdata;
-
-	// read VC4hi
-	I2C2battTalk(MASTERREAD,reg,send);
-	HAL_Delay(1);
-	reg++;
-	shared->VC4 = shared->masterrxdata << 8;
-	shared->VC4 &= ~(0x3<<14);
-
-	I2C2battTalk(MASTERREAD,reg,send);
-	HAL_Delay(1);
-	reg++;
-	shared->VC4 |= shared->masterrxdata;
-
-	// read VC5hi
-	I2C2battTalk(MASTERREAD,reg,send);
-	HAL_Delay(1);
-	reg++;
-	shared->VC5 = shared->masterrxdata << 8;
-	shared->VC5 &= ~(0x3<<14);
-
-	I2C2battTalk(MASTERREAD,reg,send);
-	HAL_Delay(1);
-	reg++;
-	shared->VC5 |= shared->masterrxdata;
-	*/
 	//  /* USER CODE END 2 */
 	//
 	//  /* Infinite loop */
