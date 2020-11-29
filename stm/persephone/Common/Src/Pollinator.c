@@ -30,8 +30,8 @@ void init_touchISR(void) {
 	RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;
 	TIM16->CR1 |= TIM_CR1_ARPE; // set auto reload preload
 	TIM16->CR1 &= ~(TIM_CR1_DIR); // set counter direction up
-	TIM16->PSC = 32000 - 1;
-	TIM16->ARR = 40 -1;
+	TIM16->PSC = 64000 - 1;
+	TIM16->ARR = 50 - 1;
 
 	// set input to tim16_ch1 input
 	TIM16->TISEL &= ~(TIM_TISEL_TI1SEL);
@@ -68,8 +68,8 @@ void init_servoPWM(void)
 	RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;
 	TIM1->CR1 |= TIM_CR1_ARPE; // set auto reload preload
 	TIM1->CR1 &= ~(TIM_CR1_DIR); // set counter direction up
-	TIM1->PSC = 32000 - 1;
-	TIM1->ARR = 40 -1;
+	TIM1->PSC = 64 - 1;
+	TIM1->ARR = 20000 -1;
 
 	TIM1->CCMR1 &= ~(TIM_CCMR1_CC1S); // set to output
 	TIM1->CCMR1 |= TIM_CCMR1_OC1PE; // preload enable (idk requried for pwm ref manual says)

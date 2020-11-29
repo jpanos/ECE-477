@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include <pollinator_cm4.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -94,6 +95,7 @@ int main(void)
   // NVIC_SetPriority();
 
   shared_init();
+  init_pollinator();
   mavlink_initialize();
   /* USER CODE END Init */
 

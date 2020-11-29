@@ -137,18 +137,6 @@ int main(void)
 	// set_mavlink_msg_interval(MAVLINK_MSG_ID_TRAJECTORY_REPRESENTATION_WAYPOINTS, 10000);
 	// spin_lock_core(HSEM_ID_CMD_BLOCK, 4, CMD_BLOCK_PROC_ID);
 
-	// touch edge detection interrupt
-	init_servoPWM();
-	set_angle(2);
-	init_touchISR();
-	NVIC_EnableIRQ(TIM16_IRQn);
-	// init green LED for test
-	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOBEN;
-	GPIOB->MODER &= ~(GPIO_MODER_MODE0);
-	GPIOB->MODER |= GPIO_MODER_MODE0_0;
-	GPIOB->ODR &= ~GPIO_ODR_OD0;
-
-
 	//  /* USER CODE END 2 */
 
 	//  /* Infinite loop */
