@@ -303,7 +303,7 @@ void TIM6_DAC_IRQHandler() {
 	if (shared->time_boot_ms % 50 == 0 && ((DMA1_Stream0->CR & 0x1) != 1)) {
 		send_next_msg();
 	}
-	if (shared->time_boot_ms % 1000 == 0){
+	if (shared->time_boot_ms % 125 == 0){
 		storeVData(); // store the cell data
 		shared->regReading = shared->regReading + 1;
 		if (shared->regReading == 0x16){
