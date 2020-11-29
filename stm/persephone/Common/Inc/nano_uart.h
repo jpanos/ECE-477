@@ -8,6 +8,8 @@
 #ifndef INC_NANO_UART_H_
 #define INC_NANO_UART_H_
 
+#include "stm32h7xx_hal_uart.h"
+
 #define SIZE_FLOWER_ARRAY 100
 #define FLOWER_DEFUALT_ID 0
 #define FLOWER_DEFAULT_X 0

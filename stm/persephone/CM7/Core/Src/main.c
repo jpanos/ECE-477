@@ -19,9 +19,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "Pollinator.h"
-
-
+#include "i2c_battery.h"
+#include <shared.h>
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -34,7 +33,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define MASTERWRITE 0
+#define MASTERREAD  1
+#define SYS_STAT 0x00
 #define HSEM_ID_0 (0U) /* HW semaphore 0*/
 /* USER CODE END PD */
 
@@ -46,7 +47,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+	char slaverxdata = 0; // create a global receive data variable
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -57,6 +58,35 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+void I2C2_EV_IRQHandler(void) { // I2C2 interrupt handler
+	if((I2C2->ISR & I2C_ISR_RXNE)==I2C_ISR_RXNE){ // is reciever not empty
+		shared->masterrxdata = I2C2->RXDR; // read th recieved data
+		I2C2->CR1 &= ~I2C_CR1_RXIE;
+	}
+	else if((I2C2->ISR & I2C_ISR_TXE) == I2C_ISR_TXE){ // need to transmit??
+		if (shared->i2cTargReg != -1)
+		{
+			// send the target register address
+			I2C2->CR1 &= ~I2C_CR1_TXIE;
+			I2C2->TXDR = shared->i2cTargReg; // send the target reg addr
+			shared->i2cTargReg = -1;
+			if (shared->i2cmode == MASTERREAD){
+				 // dont allow tx interrupt anymore
+				I2C2->CR1 |= I2C_CR1_RXIE;
+				I2C2battTalk(MASTERREAD, -1, 0x0);
+
+				//I2C2->CR1 |= I2C_CR1_RXIE; // allow rx not empty interrupt
+			}
+		}
+		else {
+			I2C2->TXDR = shared->mastertxdata;
+			I2C2->CR1 &= ~I2C_CR1_TXIE; // dont allow tx interrupt anymore
+		}
+	}
+
+}
+
 
 /* USER CODE END 0 */
 
@@ -119,33 +149,12 @@ int main(void)
   /* Initialize all configured peripherals */
   /* USER CODE BEGIN 2 */
 
-	// mavlink_initialize();
-
-	// initialize push button stuff
-	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN;
-	GPIOC->MODER &= ~(0xc000000);
-	GPIOB->ODR ^= GPIO_ODR_OD14;
-
-	// put yellow led in output mode
-	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOEEN;
-	GPIOE->MODER &= ~(GPIO_MODER_MODE1);
-	GPIOE->MODER |= GPIO_MODER_MODE1_0;
-	GPIOE->ODR &= ~GPIO_ODR_OD1;
-	// set_mavlink_msg_interval(MAVLINK_MSG_ID_PING, 10000);
-	//send_ping_message();
-	// set_mavlink_msg_interval(MAVLINK_MSG_ID_GLOBAL_POSITION_INT, 10000);
-	// set_mavlink_msg_interval(MAVLINK_MSG_ID_TRAJECTORY_REPRESENTATION_WAYPOINTS, 10000);
-	// spin_lock_core(HSEM_ID_CMD_BLOCK, 4, CMD_BLOCK_PROC_ID);
+	initI2C2(); 				// init i2c2
+	I2C2GPIOINIT();
+	initUART();
 
 	//  /* USER CODE END 2 */
-
-	int angle = 3;
-
-	init_TIM();
-	static unsigned short Touch_Button = 0;
-	int start = 2;
-	TIM1->CCR1 = 2;
-
+	//
 	//  /* Infinite loop */
 	//  /* USER CODE BEGIN WHILE */
 	uint8_t prev_val;
@@ -194,19 +203,7 @@ int main(void)
 		}
 		// other part of shitty edge detection
 		prev_val = GPIOC->IDR >> 8;
-    /* USER CODE END WHILE */
-    
 		/* USER CODE BEGIN 3 */
-		Touch_Button = check_sense();
-
-		if(Touch_Button)
-		{
-			set_angle(2);
-		}
-		else
-		{
-			set_angle(3);
-		}
   }
   /* USER CODE END 3 */
 }
