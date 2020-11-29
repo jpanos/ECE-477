@@ -119,7 +119,8 @@ void sendNano(void){
 	txdata.battPercent = shared->batPercentRemain;
 	txdata.voltage = shared->voltage;
 	char * structaddr = (char *) &txdata;
-	for (int k = 0;  k < sizeof(txdata); k++){
+	int size = sizeof(txdata);
+	for (int k = 0;  k < size; k++){
 		while((USART3->ISR & USART_ISR_TC) != USART_ISR_TC){};
 		USART3->TDR = structaddr[k];
 	}
@@ -293,7 +294,9 @@ void initUART(void){
 	GPIOC->AFR[1] |= (7<<8) | (7<<12); // set to AF7.
 
 	// config uart
-	USART3->BRR = 115200; // set the baudrate
+	USART3->BRR = 64000000 / 115200; // set the baudrate
+	USART3->CR1 &= ~(USART_CR1_M0 | USART_CR1_M1);
+	USART3->CR2 &= ~(USART_CR2_STOP); // set 1 stop bit
 	USART3->CR1 |= USART_CR1_UE | USART_CR1_TE; // enable transmit and enable peripheral
 }
 
