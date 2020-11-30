@@ -1,0 +1,1 @@
+./camera_jpeg_capture --max-disparity=160 --blocksize=11 --algorithm=bm --scale=.50 -i=intrinsics.yml -e=extrinsics.yml --no-display
