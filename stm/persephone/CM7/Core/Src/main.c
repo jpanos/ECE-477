@@ -87,6 +87,28 @@ void I2C2_EV_IRQHandler(void) { // I2C2 interrupt handler
 
 }
 
+void USART3_IRQHandler(void) { // uart 3 interrupt handler
+	// rx not empty
+	// x,y,z coordinates in floats, 12 bytes per packet
+	// todo: check endianness!!!!!
+	if ((USART3->ISR & (USART_ISR_RXNE_RXFNE))==(USART_ISR_RXNE_RXFNE)){
+			USART3->CR1 |= USART_CR1_RTOIE; // enable interrupt for rx timeout
+			shared->usartbuff[shared->usartct] = USART3->RDR; // get the byte
+			shared->usartct = shared->usartct+1;
+		}
+	else if ((USART3->ISR & USART_ISR_RTOF)== USART_ISR_RTOF) { // receive timeout
+			USART3->ICR |= USART_ICR_RTOCF; // clear the flag.
+			USART3->CR1 &=~USART_CR1_RTOIE;
+			shared->usartct = 0; // reset the byte count.
+			// parse the buffer.
+			volatile uint8_t * structaddr = (uint8_t *) &(shared->flowercoord);
+			int size = sizeof(shared->flowercoord);
+			for (int k = 0; k < size; k++){
+				structaddr[k] = shared->usartbuff[k];
+			}
+		}
+	USART3->ICR |= 0x123bbf;
+}
 
 /* USER CODE END 0 */
 

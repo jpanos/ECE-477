@@ -285,7 +285,10 @@ void initUART(void){
 	// 115200 BAUDRATE
 	RCC->APB1LENR |= RCC_APB1LENR_USART3EN; // enable clock
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN;
-
+	shared->usartct = 0;
+	shared->flowercoord.x = 0;
+	shared->flowercoord.y = 0;
+	shared->flowercoord.z = 0;
 	//set gpio
 	GPIOC->MODER &= ~(GPIO_MODER_MODE10|GPIO_MODER_MODE11);
 	GPIOC->MODER |= GPIO_MODER_MODE10_1 | GPIO_MODER_MODE11_1; // make alternate functions
@@ -297,7 +300,12 @@ void initUART(void){
 	USART3->BRR = 64000000 / 115200; // set the baudrate
 	USART3->CR1 &= ~(USART_CR1_M0 | USART_CR1_M1);
 	USART3->CR2 &= ~(USART_CR2_STOP); // set 1 stop bit
-	USART3->CR1 |= USART_CR1_UE | USART_CR1_TE; // enable transmit and enable peripheral
+	USART3->CR1 |= USART_CR1_RXNEIE; // enable interrupt for rx not empty
+	USART3->CR2 |= USART_CR2_RTOEN;
+	USART3->RTOR = 5;
+	USART3->CR1 &= ~USART_CR1_RTOIE; // enable interrupt for rx timeout
+	NVIC_EnableIRQ(USART3_IRQn); // enable interrupt
+	USART3->CR1 |= USART_CR1_UE | USART_CR1_RE | USART_CR1_TE; // enable recieve and enable peripheral
 }
 
 void I2C_StartTX(I2C_TypeDef* I2C, uint32_t DevAddress, uint8_t Size, uint8_t Direction) {
