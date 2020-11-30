@@ -28,7 +28,7 @@
 #
 ###############################################################################
 
-include ../Rules.mk
+include Rules.mk
 
 APP := camera_jpeg_capture
 

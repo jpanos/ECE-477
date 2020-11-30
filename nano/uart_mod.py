@@ -8,12 +8,23 @@ import time
 import socket
 
 class Flower:
-    def __init__(self, name, x, y, z, conf):
-        self.name = name
-        self.x = x
-        self.y = y
-        self.z = z
-        self.conf = conf
+    def __init__(self, regSize):
+        self.regSize = regSize
+        self.x = []
+        self.y = []
+        self.z = []
+
+    def loadLoc(self, x, y, z):
+        if len(self.x) > self.regSize:
+            self.x.pop(0)
+            self.y.pop(0)
+            self.z.pop(0)
+        self.x.append(x)
+        self.y.append(y)
+        self.z.append(z)
+
+    def getLoc(self):
+        return ((sum(self.x)/len(self.x)),(sum(self.y)/len(self.y)),(sum(self.z)/len(self.z)))
 
     def __str__(self):
         return "ID: %3d | X: %3d | Y:%3d | Z:%3d | CONF:%3d" % (self.name, self.x, self.y, self.z, self.conf)
@@ -107,14 +118,17 @@ if __name__ == "__main__":
     #connect to serial
     s = socket.socket(socket.AF_UNIX, socket.SOCK_SEQPACKET)
     s.connect("/tmp/flower.socket")
+    flowerBuff = Flower(10)
     try:
         while True:
             if serial_port.inWaiting() > 7:
                 (x,y) = unpack('<if', serial_port.read(8))
                 print(f"receiving UART [{x}][{y}]")
             (a,b,c) = unpack("fff", s.recv(12)) #timing may be weird here, select instead
-            print(f"sending UART {a} {b} {c}")
-            serialport.write(pack("<fff", a, b, c))
+            flowerBuff.loadLoc(a,b,c) #change ordering?
+            loc = flowerBuff.getLoc()
+            print(f"sending UART {loc}")
+            serial_port.write(pack("<fff", loc[0], loc[1], loc[2])) #change ordering?
     except Exception as e:
         s.shutdown(socket.SHUT_RDWR)
         s.close()

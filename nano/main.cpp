@@ -659,7 +659,6 @@ cv::Vec3f getStereo( int alg, int SADWindowSize, int numberOfDisparities, bool n
     reprojectImageTo3D(floatDisp, xyz, Q, true);
 
     cv::Vec3f elem = xyz.at<cv::Vec3f>(maxLoc);
-    //std::cout << elem << " D = " << sqrt(elem[0]*elem[0] + elem[1]*elem[1] + elem[2]*elem[2]) << std::endl; 
     //printf("press ESC key or CTRL+C to close...");
     fflush(stdout);
     //printf("\n");
@@ -673,6 +672,9 @@ cv::Vec3f getStereo( int alg, int SADWindowSize, int numberOfDisparities, bool n
         imshow("blobs", blobs);
         namedWindow(disp_name, cv::WINDOW_AUTOSIZE);
         imshow(disp_name, color_display ? disp8_3c : disp8);
+
+        std::cout << elem << " D = " << sqrt(elem[0]*elem[0] + elem[1]*elem[1] + elem[2]*elem[2]) << std::endl; 
+
     }
 
     return elem;
@@ -976,17 +978,8 @@ int main(int argc, char** argv)
     //init Socket
     int connection_socket = initSocket();
     int data_socket;
-    int result;
     char buff[12];
-    char readBuff[10];
-    int size = 0;
-    fd_set set;
-    timeval tv;
-    tv.tv_sec = 100;
-    tv.tv_usec = 0;
 
-    FD_ZERO(&set);
-    FD_SET(data_socket, &set);
     data_socket = accept(connection_socket, NULL, NULL);
     if(data_socket == -1) std::cout << "Failed Accept Socket" << std::endl;
 
