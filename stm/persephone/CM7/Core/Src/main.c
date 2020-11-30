@@ -223,7 +223,7 @@ int main(void)
 			// turn off yellow led
 			GPIOE->ODR &= ~GPIO_ODR_OD1;
 			// 3rd argument is mask, when set to 0x1000 or 0x2000, puts drone in loiter mode
-			set_hold2(0);
+			set_vel_hold(0);
 			msleep(5000);
 			// set_offboard(0);
 
@@ -258,7 +258,7 @@ int main(void)
 			// set_pos_setpoint(0, MAV_FRAME_BODY_NED, 0xdc4, x_setpoint, 0, 0, .5, 0, 0, 0, 0, 0, 0, 0);
 			// while (shared->pos_x < x_setpoint) {}
 
-			set_hold2(0);
+			set_vel_hold(0);
 			msleep(5000);
 			// set_offboard(0);
 
