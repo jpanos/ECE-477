@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include <pollinator_cm4.h>
 #include "i2c_battery.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -93,6 +94,7 @@ int main(void)
   // NVIC_SetPriority();
 
   shared_init();
+  init_pollinator();
   mavlink_initialize();
   /* USER CODE END Init */
 

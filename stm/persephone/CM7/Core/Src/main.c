@@ -176,7 +176,7 @@ int main(void)
 	initUART();
 
 	//  /* USER CODE END 2 */
-	//
+
 	//  /* Infinite loop */
 	//  /* USER CODE BEGIN WHILE */
 	uint8_t prev_val;
@@ -226,6 +226,7 @@ int main(void)
 		// other part of shitty edge detection
 		prev_val = GPIOC->IDR >> 8;
 		/* USER CODE BEGIN 3 */
+
   }
   /* USER CODE END 3 */
 }
