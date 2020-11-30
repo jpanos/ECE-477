@@ -6,6 +6,7 @@
  */
 
 #include <mavlink_cm4.h>
+#include "i2c_battery.h"
 
 // receive structs
 mavlink_message_t _rcv_msg;
@@ -301,6 +302,23 @@ void TIM6_DAC_IRQHandler() {
 
 	if (shared->time_boot_ms % 50 == 0 && ((DMA1_Stream0->CR & 0x1) != 1)) {
 		send_next_msg();
+	}
+	if (shared->time_boot_ms % 125 == 0){
+		storeVData(); // store the cell data
+		shared->regReading = shared->regReading + 1;
+		if (shared->regReading == 0x16){
+			shared->regReading = 0x0c; // go back to start.
+			shared->computeVoltageFlag = 1;
+		}
+		int reg = shared->regReading;
+		I2C2battTalk(MASTERREAD,reg, 0x18);
+	}
+	if (shared->computeVoltageFlag){
+		shared->computeVoltageFlag = 0;
+		shared->bat = shared->VC1 + shared->VC2 + shared->VC3 + shared->VC5;
+		shared->voltage = (shared->bat) * 6.275 / 16383;
+		getBatPercent();
+	    sendNano();
 	}
 
 }

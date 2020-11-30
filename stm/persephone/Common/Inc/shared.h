@@ -73,6 +73,27 @@ typedef struct _mavlink_shared_data {
 	float pos_set_yaw_rate;
 //////////////MAVLINK SHARED DATA END//////////////////////
 
+//////////////I2c shit	/////////////////////
+	char masterrxdata;
+	char mastertxdata;
+	int i2cTargReg;
+	char i2cmode;
+	int regReading;
+	int VC1;
+	int VC2;
+	int VC3;
+	int VC4;
+	int VC5;
+	float cell1;
+	float cell2;
+	float cell3;
+	float cell4;
+	float total;
+	int bat;
+	char computeVoltageFlag;
+	char count;
+	float voltage;
+	int batPercentRemain;
 } MavlinkSharedData;
 
 extern volatile MavlinkSharedData * const shared;
