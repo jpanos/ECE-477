@@ -1,5 +1,9 @@
 #include <mavlink_pssc.h>
-
+#include <stm32h7xx_hal.h>
+#include <common/mavlink.h>
+#include <spin_lock.h>
+#include <queue.h>
+#include <shared.h>
 
 mavlink_system_t mavlink_system = {
 		1, // System ID (0-255)
@@ -162,5 +166,18 @@ uint8_t set_vel_hold(uint32_t procID) {
 }
 
 uint8_t takeoff(float meters) {
-	return 0;
+  float z_setpoint = shared->pos_z - meters;
+  set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, -.7, 0, 0, 0, 0, 0);
+  while (shared->pos_z > z_setpoint) {}
+  set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  return MVPSSC_SUCCESS;
 }
+
+uint8_t set_flower_setpoint() {
+  if (!(shared->pos_mode & MVPSSC_POS_MODE_FLOWER)) return MVPSSC_FAIL;
+  float vx = 0,vy = 0,vz = 0;
+
+
+  return MVPSSC_SUCCESS;
+}
+
