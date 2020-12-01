@@ -109,6 +109,7 @@ void USART3_IRQHandler(void) { // uart 3 interrupt handler
 				structaddr[k] = shared->usartbuff[k];
 			}
 			lock_release(HSEM_ID_FLOWER_POS_DATA, UART3_RX_PROC_ID);
+			set_flower_setpoint();
 		}
 	USART3->ICR |= 0x123bbf;
 }
@@ -214,7 +215,11 @@ int main(void)
 			// set to offboard mode
 			set_offboard(0);
 			// a variabe, sets z setpoint to halz z velocit at
+<<<<<<< HEAD
 			float z_setpoint = shared->pos_z - .75;
+=======
+			float z_setpoint = shared->pos_z - 1.25;
+>>>>>>> 7bc19e42641da36e7284979d6ce1b09420bca602
 			// set z velocity to -.7 m/s (z positive axis is down)
 			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, -.7, 0, 0, 0, 0, 0);
 			// arm drone
@@ -226,6 +231,7 @@ int main(void)
 			// turn off yellow led
 			GPIOE->ODR &= ~GPIO_ODR_OD1;
 			// 3rd argument is mask, when set to 0x1000 or 0x2000, puts drone in loiter mode
+<<<<<<< HEAD
 			set_vel_hold(0);
 			msleep(5000);
 
@@ -239,7 +245,46 @@ int main(void)
       msleep(10000);
 
 			set_vel_hold(0);
+=======
+			set_hold2(0);
 			msleep(5000);
+			// set_offboard(0);
+
+			// mav mask reference: yaw_rate yaw force afz | afy afx vz vy | vx z y x
+
+			// test 1: set velocity forward LOCAL frame
+			// set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT, 0, 0, 0, .5, 0, 0, 0, 0, 0, 0, 0);
+			// msleep(4000);
+
+			// test 2: set velocity forward BODY frame
+			set_pos_setpoint(0, MAV_FRAME_BODY_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT, 0, 0, 0, .5, 0, 0, 0, 0, 0, 0, 0);
+			msleep(10000);
+
+			// float x_setpoint = shared->pos_x + 2;
+
+			// test 3: set position forward LOCAL frame
+			// set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_POSITION_SETPOINT, x_setpoint, shared->pos_set_y, shared->pos_set_z, 0, 0, 0, 0, 0, 0, 0, 0);
+			// msleep(5000);
+			// while (shared->pos_x > x_setpoint) {}
+			//msleep(4000);
+
+			// test 4: set position forward BODY frame
+			// set_pos_setpoint(0, MAV_FRAME_BODY_NED, MVPSSC_POS_MASK_POSITION_SETPOINT, x_setpoint, shared->pos_set_y, shared->pos_set_z, 0, 0, 0, 0, 0, 0, 0, 0);
+			// msleep(5000);
+			// while (shared->pos_x < x_setpoint) {}
+
+			// test 5: set position and velocity forward LOCAL frame
+			// set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, 0xdc4, x_setpoint, 0, 0, .5, 0, 0, 0, 0, 0, 0, 0);
+			// while (shared->pos_x < x_setpoint) {}
+
+			// test 6: set position and velocity forward BODY frame
+			// set_pos_setpoint(0, MAV_FRAME_BODY_NED, 0xdc4, x_setpoint, 0, 0, .5, 0, 0, 0, 0, 0, 0, 0);
+			// while (shared->pos_x < x_setpoint) {}
+
+			set_hold2(0);
+>>>>>>> 7bc19e42641da36e7284979d6ce1b09420bca602
+			msleep(5000);
+			// set_offboard(0);
 
 			// set setpoint to go down at .7 m/s
 			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, .7, 0, 0, 0, 0, 0);
@@ -253,6 +298,17 @@ int main(void)
 		prev_val = GPIOC->IDR >> 8;
 		/* USER CODE BEGIN 3 */
 
+<<<<<<< HEAD
+=======
+		if(check_sense())
+		{
+			set_angle(2);
+		}
+		else
+		{
+			set_angle(3);
+		}
+>>>>>>> 7bc19e42641da36e7284979d6ce1b09420bca602
   }
   /* USER CODE END 3 */
 }
