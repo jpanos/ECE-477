@@ -383,8 +383,10 @@ void updateFrames() {
         // cv::inRange(frame_1, cv::Scalar(14,64,120), cv::Scalar(30,255,255), maskYellow_1);
         // cv::inRange(frame_2, cv::Scalar(14,64,120), cv::Scalar(30,255,255), maskYellow_2);
 
-        cv::inRange(frame_1, cv::Scalar(0,0,230), cv::Scalar(179, 15, 255), maskWhite_1); //TODO: Calibrate later?
-        cv::inRange(frame_2, cv::Scalar(0,0,230), cv::Scalar(179, 15, 255), maskWhite_2);
+        //cv::inRange(frame_1, cv::Scalar(0,0,230), cv::Scalar(179, 15, 255), maskWhite_1); //TODO: Calibrate later?
+        //cv::inRange(frame_2, cv::Scalar(0,0,230), cv::Scalar(179, 15, 255), maskWhite_2);
+        cv::inRange(frame_1, cv::Scalar(146,128,128), cv::Scalar(180, 255, 255), maskWhite_1); //TODO: Calibrate later?
+        cv::inRange(frame_2, cv::Scalar(146,128,128), cv::Scalar(180, 255, 255), maskWhite_2);
         // cv::cvtColor(maskWhite_1, maskWhite_1, cv::COLOR_GRAY2BGR);
         // cv::cvtColor(maskWhite_1, maskWhite_1, cv::COLOR_BGR2HSV);
         // cv::cvtColor(maskWhite_2, maskWhite_2, cv::COLOR_GRAY2BGR);
