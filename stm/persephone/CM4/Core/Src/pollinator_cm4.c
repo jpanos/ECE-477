@@ -18,7 +18,7 @@ void TIM16_IRQHandler() {
 		set_angle(POLLINATOR_DOWN_ANGLE);
 		TIM16->DIER |= TIM_DIER_UIE;
 	}
-	else {
+	else { // when UIE enabled, interrupt fires a 20Hz
 		TIM16->SR &= ~TIM_SR_UIF;
 		_pollinator_jig_count++;
 		switch (_pollinator_jig_count) {
@@ -34,6 +34,9 @@ void TIM16_IRQHandler() {
 		  case 20:
 	      TIM16->DIER &= ~TIM_DIER_UIE;
 	      set_angle_deg(POLLINATOR_STRAIGHT_ANGLE);
+		    break;
+		  default:
+		    set_angle_deg(POLLINATOR_STRAIGHT_ANGLE);
 		    break;
 		}
 	}
