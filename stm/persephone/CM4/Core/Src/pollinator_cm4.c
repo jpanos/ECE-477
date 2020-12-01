@@ -35,9 +35,6 @@ void TIM16_IRQHandler() {
 	      TIM16->DIER &= ~TIM_DIER_UIE;
 	      set_angle_deg(POLLINATOR_STRAIGHT_ANGLE);
 		    break;
-		  default:
-		    set_angle_deg(POLLINATOR_STRAIGHT_ANGLE);
-		    break;
 		}
 	}
 }
