@@ -20,11 +20,13 @@
 #define HSEM_ID_CMD_BLOCK HSEM_ID_CMD
 #define HSEM_ID_START_OFFBOARD_FLAG 18
 #define HSEM_ID_POS_SETPOINT 19
+#define HSEM_ID_FLOWER_POS_DATA 20
 
 // shared data process IDs
 #define DMA1_S0_PROC_ID 40
 #define TIM6_PROC_ID 41
 #define UART1_RX_PROC_ID 42
+#define UART3_RX_PROC_ID 43
 
 typedef struct _point{
 	float x;

@@ -10,6 +10,10 @@
 
 int check_sense(void);
 void set_angle(int);
+int get_angle(void);
+void set_angle_deg(int deg);
+int get_angle_deg(void);
+
 
 void init_servoPWM(void);
 void init_touchISR(void);

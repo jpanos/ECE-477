@@ -160,6 +160,10 @@ uint8_t send_next_msg() {
 
 uint8_t _send_position_target() {
 	mavlink_message_t msg;
+	uint8_t frame;
+	uint16_t mask;
+	float x,y,z,vx,vy,vz,afx,afy,afz,yaw,yaw_rate;
+
 	spin_lock(HSEM_ID_POS_SETPOINT, TIM6_PROC_ID);
 	mavlink_msg_set_position_target_local_ned_pack(
 			mavlink_system.sysid,
