@@ -39,6 +39,10 @@
 #define MVPSSC_POS_MODE_FLOWER 0x2
 #define MVPSSC_POS_MODE_LAND 0x80
 
+#define MVPSSC_POS_X_ERR 10
+#define MVPSSC_POS_Y_ERR 10
+#define MVPSSC_POS_Z_ERR 10
+
 // mav mask reference: yaw_rate yaw force afz | afy afx vz vy | vx z y x
 #define MVPSSC_POS_MASK_IGNORE_ALL 0x0dff
 #define MVPSSC_POS_MASK_POSITION_SETPOINT 0x0df8
