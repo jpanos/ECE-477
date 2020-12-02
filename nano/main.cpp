@@ -145,18 +145,6 @@ public:
 
 };
 
-int sendNetworkPacket(cv::Mat m, int socket, const struct sockaddr){
-
-
-    int sendto(int socket, const void *buffer, size_t length, int flags, const struct sockaddr *dest_addr,
-         socklen_t dest_len)
-}
-
-int initNetworkSocket(){
-
-
-}
-
 int initUnixSocket(){
     struct sockaddr_un name;
     int connection_socket;
@@ -696,7 +684,7 @@ cv::Vec3f getStereo( int alg, int SADWindowSize, int numberOfDisparities, bool n
         std::cout << elem << " D = " << sqrt(elem[0]*elem[0] + elem[1]*elem[1] + elem[2]*elem[2]) << std::endl; 
 
     }
-    retFrame = disp8;
+    * retFrame = disp8;
     return elem;
 }
 /**
@@ -995,32 +983,32 @@ int main(int argc, char** argv)
         return -1;
     }
     //init Network Socket
-    int network_socket;
-    struct sockaddr_in sa;
+    // int network_socket;
+    // struct sockaddr_in sa;
 
-    memset((char *)&sa, 0, sizeof(sa));
-    sa.sin_family = AF_INET;
-    sa.sin_addr.s_addr = htonl(INADDR_ANY);
-    sa.sin_port = htons(0)
+    // memset((char *)&sa, 0, sizeof(sa));
+    // sa.sin_family = AF_INET;
+    // sa.sin_addr.s_addr = htonl(INADDR_ANY);
+    // sa.sin_port = htons(0);
 
-    network_socket = socket(AF_INET, SOCK_DGRAM, 0);
-    if(network_socket == -1) std::cout << "Failed Network Socket Creation" << std::endl;
+    // network_socket = socket(AF_INET, SOCK_DGRAM, 0);
+    // if(network_socket == -1) std::cout << "Failed Network Socket Creation" << std::endl;
 
-    if (bind(fd, (struct sockaddr *)&sa, sizeof(sa)) < 0) {
-        std::cout << "Failed Network Socket Bind" << std::endl;
-    }
+    // if (bind(network_socket, (struct sockaddr *)&sa, sizeof(sa)) < 0) {
+    //     std::cout << "Failed Network Socket Bind" << std::endl;
+    // }
 
     //init Network Host
-    struct hostent *hp;
-    struct sockaddr_in server;
+    // struct hostent *hp;
+    // struct sockaddr_in server;
     
-    memset((char*)&server, 0, sizeof(server));
-    server.sin_family = AF_INET;
-    server.sin_family = htons(UDP_PORT);
+    // memset((char*)&server, 0, sizeof(server));
+    // server.sin_family = AF_INET;
+    // server.sin_family = htons(SERVER_PORT);
 
-    hp = gethostname("192.168.0.113");
-    if(!hp)std::cout << "gethostname failed!" << std::endl;
-    memcpy((void*)&server.sin_addr, hp->h_addr_list[0], hp->hlength);
+    // hp = gethostname("192.168.0.113", 13);
+    // if(!hp)std::cout << "gethostname failed!" << std::endl;
+    // memcpy((void*)&server.sin_addr, hp->h_addr_list[0], hp->hlength);
 
     //init Socket
     int connection_socket = initUnixSocket();
@@ -1070,10 +1058,10 @@ int main(int argc, char** argv)
 
         int ibuf[1];
         ibuf[0] = total_pack;
-        sock.sendTo(ibuf, sizeof(int), SERVER_ADDRESS, servPort);
+        sock.sendTo(ibuf, sizeof(int), SERVER_ADDR, SERVER_PORT);
 
         for (int i = 0; i < total_pack; i++)
-        sock.sendTo( & encoded[i * PACK_SIZE], PACK_SIZE, servAddress, servPort);
+        sock.sendTo( & encoded[i * PACK_SIZE], PACK_SIZE, SERVER_ADDR, SERVER_PORT);
 
         waitKey(FRAME_INTERVAL);
 
