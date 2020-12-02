@@ -92,7 +92,7 @@ uint8_t set_offboard(uint32_t procID);
 
 uint8_t set_pos_hold(uint32_t procID);
 uint8_t set_hold_mode(uint32_t procID);
-uint8_t set_vel_hold(uint32_t procID)
+uint8_t set_vel_hold(uint32_t procID);
 
 uint8_t takeoff(float meters);
 
