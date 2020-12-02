@@ -227,6 +227,17 @@ int main(void)
 			// turn off yellow led
 			GPIOE->ODR &= ~GPIO_ODR_OD1;
 			// 3rd argument is mask, when set to 0x1000 or 0x2000, puts drone in loiter mode
+			set_vel_hold(0);
+			msleep(5000);
+
+			// spin around until receive flower positional data
+			set_pos_setpoint(0, MAV_FRAME_BODY_NED, MVPSSC_POS_MASK_VEL_YAWRATE_SETPOINT,
+			    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, .4);
+			while (shared->flowercoord.x == 0) {}
+      set_pos_setpoint(0, MAV_FRAME_BODY_NED, MVPSSC_POS_MASK_VEL_YAWRATE_SETPOINT,
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+      shared->pos_mode |= MVPSSC_POS_MODE_FLOWER;
+      msleep(10000);
 
 			set_vel_hold(0);
 			msleep(5000);

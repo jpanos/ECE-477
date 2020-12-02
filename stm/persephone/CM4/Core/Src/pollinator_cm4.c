@@ -15,15 +15,26 @@ void TIM16_IRQHandler() {
 		GPIOB->ODR ^= GPIO_ODR_OD0;
 
 		_pollinator_jig_count = 0;
-		set_angle(3000);
+		set_angle(POLLINATOR_DOWN_ANGLE);
 		TIM16->DIER |= TIM_DIER_UIE;
 	}
-	else {
+	else { // when UIE enabled, interrupt fires a 20Hz
 		TIM16->SR &= ~TIM_SR_UIF;
 		_pollinator_jig_count++;
-		if (_pollinator_jig_count == 20) {
-			TIM16->DIER &= ~TIM_DIER_UIE;
-			set_angle(1000);
+		switch (_pollinator_jig_count) {
+		  case 5:
+		    set_angle_deg(POLLINATOR_UP_ANGLE);
+		    break;
+		  case 10:
+		    set_angle_deg(POLLINATOR_DOWN_ANGLE);
+		    break;
+		  case 15:
+		    set_angle_deg(POLLINATOR_UP_ANGLE);
+		    break;
+		  case 20:
+	      TIM16->DIER &= ~TIM_DIER_UIE;
+	      set_angle_deg(POLLINATOR_STRAIGHT_ANGLE);
+		    break;
 		}
 	}
 }
@@ -31,7 +42,7 @@ void TIM16_IRQHandler() {
 void init_pollinator() {
 	// touch edge detection interrupt
 	init_servoPWM();
-	set_angle(1000);
+	set_angle_deg(POLLINATOR_STRAIGHT_ANGLE);
 	init_touchISR();
 	NVIC_EnableIRQ(TIM16_IRQn);
 	// init green LED for test
