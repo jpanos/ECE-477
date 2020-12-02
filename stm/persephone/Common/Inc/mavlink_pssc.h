@@ -21,11 +21,6 @@
 #ifndef INC_MAVLINK_PSSC_H_
 #define INC_MAVLINK_PSSC_H_
 
-#include <stm32h7xx_hal.h>
-#include <common/mavlink.h>
-#include <spin_lock.h>
-#include <queue.h>
-
 #define MVPSSC_SUCCESS 0
 #define MVPSSC_FAIL 1
 
@@ -94,11 +89,13 @@ uint8_t send_arm_disarm_message(uint8_t armval, uint8_t force);
 uint8_t set_pos_setpoint(uint32_t procID, uint8_t frame, uint16_t mask,
 		float x, float y, float z, float vx, float vy, float vz, float afx, float afy, float afz, float yaw, float rate);
 uint8_t set_offboard(uint32_t procID);
+
 uint8_t set_pos_hold(uint32_t procID);
 uint8_t set_hold_mode(uint32_t procID);
 uint8_t set_vel_hold(uint32_t procID);
 
 uint8_t takeoff(float meters);
 
-#include <shared.h>
+uint8_t set_flower_setpoint(void);
+
 #endif /* INC_MAVLINK_PSSC_H_ */
