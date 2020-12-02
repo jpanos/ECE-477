@@ -181,7 +181,7 @@ int main(void)
 
 	// initialize push button stuff
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN;
-	GPIOC->MODER &= ~(0xc000000);
+	GPIOC->MODER &= ~(GPIO_MODER_MODE13);
 	GPIOB->ODR ^= GPIO_ODR_OD14;
 
 	// put yellow led in output mode
@@ -203,7 +203,7 @@ int main(void)
 	{
 		// a wait for loop used for my shitty edge detection
 		for (int i = 0; i <1000000; i++){}
-		if (prev_val == 0 && GPIOC->IDR != 0) {
+		if ((prev_val == 0) && (GPIOC->IDR & GPIO_IDR_ID13)) {
 			float alt = shared->altitude_msl;
 			// yellow light on to show that in if statement
 			GPIOE->ODR |= GPIO_ODR_OD1;
@@ -250,7 +250,7 @@ int main(void)
 			send_arm_disarm_message(0, 0);
 		}
 		// other part of shitty edge detection
-		prev_val = GPIOC->IDR >> 8;
+		prev_val = (GPIOC->IDR & GPIO_IDR_ID13) >> 8;
 		/* USER CODE BEGIN 3 */
 
   }
