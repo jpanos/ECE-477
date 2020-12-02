@@ -47,10 +47,18 @@
 #include <fstream>
 #include <signal.h>
 
+#include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-#define SOCKET_NAME "/tmp/flower.socket"
 
+#include "udpFramework/config.h"
+#include "udpFramework/PracticalSocket.h"
+
+
+#define SOCKET_NAME "/tmp/flower.socket"
+#define SERVER_ADDR "192.168.0.113"
+#define SERVER_PORT 6969
+#define BUF_LEN 65540 // Larger than maximum UDP packet size
 
 
 #define SPECKLE_RANGE 64
@@ -137,7 +145,19 @@ public:
 
 };
 
-int initSocket(){
+int sendNetworkPacket(cv::Mat m, int socket, const struct sockaddr){
+
+
+    int sendto(int socket, const void *buffer, size_t length, int flags, const struct sockaddr *dest_addr,
+         socklen_t dest_len)
+}
+
+int initNetworkSocket(){
+
+
+}
+
+int initUnixSocket(){
     struct sockaddr_un name;
     int connection_socket;
     int ret;
@@ -429,7 +449,7 @@ static void saveXYZ(const char* filename, const cv::Mat& mat)
 
 cv::Vec3f getStereo( int alg, int SADWindowSize, int numberOfDisparities, bool no_display, bool color_display, float scale,
  string intrinsic_filename, string extrinsic_filename, string disparity_filename, string point_cloud_filename,Ptr<StereoBM> bm, 
- Ptr<StereoSGBM> sgbm){
+ Ptr<StereoSGBM> sgbm, cv::Mat * retFrame){
 
     ArgusSamples::updateFrames();
 
@@ -652,8 +672,6 @@ cv::Vec3f getStereo( int alg, int SADWindowSize, int numberOfDisparities, bool n
     circle(blobs, maxLoc, 3, Scalar(255), 2);
     circle(disp8, maxLoc, 3, Scalar(255), 2);
 
-
-
     //experimental:
     Mat xyz;
     Mat floatDisp;
@@ -678,7 +696,7 @@ cv::Vec3f getStereo( int alg, int SADWindowSize, int numberOfDisparities, bool n
         std::cout << elem << " D = " << sqrt(elem[0]*elem[0] + elem[1]*elem[1] + elem[2]*elem[2]) << std::endl; 
 
     }
-
+    retFrame = disp8;
     return elem;
 }
 /**
@@ -976,9 +994,36 @@ int main(int argc, char** argv)
         printf("Command-line parameter error: extrinsic and intrinsic parameters must be specified to compute the point cloud\n");
         return -1;
     }
+    //init Network Socket
+    int network_socket;
+    struct sockaddr_in sa;
+
+    memset((char *)&sa, 0, sizeof(sa));
+    sa.sin_family = AF_INET;
+    sa.sin_addr.s_addr = htonl(INADDR_ANY);
+    sa.sin_port = htons(0)
+
+    network_socket = socket(AF_INET, SOCK_DGRAM, 0);
+    if(network_socket == -1) std::cout << "Failed Network Socket Creation" << std::endl;
+
+    if (bind(fd, (struct sockaddr *)&sa, sizeof(sa)) < 0) {
+        std::cout << "Failed Network Socket Bind" << std::endl;
+    }
+
+    //init Network Host
+    struct hostent *hp;
+    struct sockaddr_in server;
+    
+    memset((char*)&server, 0, sizeof(server));
+    server.sin_family = AF_INET;
+    server.sin_family = htons(UDP_PORT);
+
+    hp = gethostname("192.168.0.113");
+    if(!hp)std::cout << "gethostname failed!" << std::endl;
+    memcpy((void*)&server.sin_addr, hp->h_addr_list[0], hp->hlength);
 
     //init Socket
-    int connection_socket = initSocket();
+    int connection_socket = initUnixSocket();
     int data_socket;
     char buff[12];
 
@@ -986,9 +1031,19 @@ int main(int argc, char** argv)
     if(data_socket == -1) std::cout << "Failed Accept Socket" << std::endl;
 
     cv::Vec3f loc;
+
+    UDPSocket sock;
+    int jpegqual =  ENCODE_QUALITY; // Compression Parameter
+
+    cv::Mat frame, send;
+    vector < uchar > encoded;
+    clock_t last_cycle = clock();
+
     while(1)
     {
-        loc = ArgusSamples::getStereo(alg, SADWindowSize, numberOfDisparities, no_display, color_display, scale, intrinsic_filename, extrinsic_filename, disparity_filename, point_cloud_filename, bm, sgbm);
+        loc = ArgusSamples::getStereo(alg, SADWindowSize, numberOfDisparities, no_display, 
+            color_display, scale, intrinsic_filename, extrinsic_filename, disparity_filename, 
+            point_cloud_filename, bm, sgbm, &frame);
         if((waitKey(20) & 0xFF) == 'q') //ESC (prevents closing on actions like taking screenshots)
             break;
         memset(buff, 0, sizeof(buff));
@@ -1000,8 +1055,35 @@ int main(int argc, char** argv)
             std::cout << "Closing Resources!" << std::endl;
             break;
         }
-        write(data_socket, buff, sizeof(buff));
         //send the location data via the socket
+        write(data_socket, buff, sizeof(buff));
+        //send the frame to the network socket
+        if(frame.size().width==0)continue;//simple integrity check; skip erroneous data...
+        resize(frame, send, Size(FRAME_WIDTH, FRAME_HEIGHT), 0, 0, INTER_LINEAR);
+        vector < int > compression_params;
+        compression_params.push_back(IMWRITE_JPEG_QUALITY);
+        compression_params.push_back(jpegqual);
+
+        imencode(".jpg", send, encoded, compression_params);
+        imshow("send", send);
+        int total_pack = 1 + (encoded.size() - 1) / PACK_SIZE;
+
+        int ibuf[1];
+        ibuf[0] = total_pack;
+        sock.sendTo(ibuf, sizeof(int), SERVER_ADDRESS, servPort);
+
+        for (int i = 0; i < total_pack; i++)
+        sock.sendTo( & encoded[i * PACK_SIZE], PACK_SIZE, servAddress, servPort);
+
+        waitKey(FRAME_INTERVAL);
+
+        clock_t next_cycle = clock();
+        double duration = (next_cycle - last_cycle) / (double) CLOCKS_PER_SEC;
+        cout << "\teffective FPS:" << (1 / duration) << " \tkbps:" << (PACK_SIZE * total_pack / duration / 1024 * 8) << endl;
+
+        cout << next_cycle - last_cycle;
+        last_cycle = next_cycle;
+        
     }
     shutdown(data_socket, 2);
     close(data_socket);
