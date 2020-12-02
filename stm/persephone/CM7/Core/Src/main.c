@@ -102,10 +102,13 @@ void USART3_IRQHandler(void) { // uart 3 interrupt handler
 			shared->usartct = 0; // reset the byte count.
 			// parse the buffer.
 			volatile uint8_t * structaddr = (uint8_t *) &(shared->flowercoord);
-			int size = sizeof(shared->flowercoord);
+			int size = sizeof(Point);
+
+			spin_lock(HSEM_ID_FLOWER_POS_DATA, UART3_RX_PROC_ID);
 			for (int k = 0; k < size; k++){
 				structaddr[k] = shared->usartbuff[k];
 			}
+			lock_release(HSEM_ID_FLOWER_POS_DATA, UART3_RX_PROC_ID);
 		}
 	USART3->ICR |= 0x123bbf;
 }
@@ -123,6 +126,7 @@ int main(void)
   /* USER CODE END 1 */
 
 	/* USER CODE BEGIN Boot_Mode_Sequence_0 */
+	shared->mav_state = MAV_STATE_UNINIT;
   int32_t timeout;
   /* USER CODE END Boot_Mode_Sequence_0 */
 
@@ -175,10 +179,22 @@ int main(void)
 	I2C2GPIOINIT();
 	initUART();
 
+	// initialize push button stuff
+	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN;
+	GPIOC->MODER &= ~(0xc000000);
+	GPIOB->ODR ^= GPIO_ODR_OD14;
+
+	// put yellow led in output mode
+	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOEEN;
+	GPIOE->MODER &= ~(GPIO_MODER_MODE1);
+	GPIOE->MODER |= GPIO_MODER_MODE1_0;
+	GPIOE->ODR &= ~GPIO_ODR_OD1;
+
 	//  /* USER CODE END 2 */
 
 	//  /* Infinite loop */
 	//  /* USER CODE BEGIN WHILE */
+  while (shared->mav_state == MAV_STATE_UNINIT) {}
 	uint8_t prev_val;
 	mavlink_message_t takeoff_msg;
 
@@ -196,13 +212,11 @@ int main(void)
 			// enable mode; not sure if this is needed
 			send_command_long(MAV_CMD_NAV_GUIDED_ENABLE, 0, 0, 0, 0, 0, 0, 0);
 			// set to offboard mode
-			send_command_long(MAV_CMD_DO_SET_MODE,
-												(MAV_MODE_FLAG_CUSTOM_MODE_ENABLED | MAV_MODE_FLAG_SAFETY_ARMED),
-												6, 0, 0, 0, 0, 0);
+			set_offboard(0);
 			// a variabe, sets z setpoint to halz z velocit at
-			float z_setpoint = shared->pos_z - 0.5;
+			float z_setpoint = shared->pos_z - .75;
 			// set z velocity to -.7 m/s (z positive axis is down)
-			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, -.7, 0, 0, 0, 0, 0);
+			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, -.7, 0, 0, 0, 0, 0);
 			// arm drone
 			send_arm_disarm_message(1, 0);
 			msleep(500);
@@ -212,11 +226,23 @@ int main(void)
 			// turn off yellow led
 			GPIOE->ODR &= ~GPIO_ODR_OD1;
 			// 3rd argument is mask, when set to 0x1000 or 0x2000, puts drone in loiter mode
-			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, 0x3000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+			set_vel_hold(0);
+			msleep(5000);
+
+			// spin around until receive flower positional data
+			set_pos_setpoint(0, MAV_FRAME_BODY_NED, MVPSSC_POS_MASK_VEL_YAWRATE_SETPOINT,
+			    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, .4);
+			while (shared->flowercoord.x == 0) {}
+      set_pos_setpoint(0, MAV_FRAME_BODY_NED, MVPSSC_POS_MASK_VEL_YAWRATE_SETPOINT,
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+      shared->pos_mode |= MVPSSC_POS_MODE_FLOWER;
+      msleep(10000);
+
+			set_vel_hold(0);
 			msleep(5000);
 
 			// set setpoint to go down at .7 m/s
-			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, .7, 0, 0, 0, 0, 0);
+			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, .7, 0, 0, 0, 0, 0);
 
 			// when landed state is detected, turn on led and disarm drone
 			while (shared->landed_state != MAV_LANDED_STATE_ON_GROUND);
@@ -279,7 +305,10 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void TIM16_IRQHandler() {
+	uint16_t val = TIM16->CCR1;
+	GPIOB->ODR ^= GPIO_ODR_OD0;
+}
 /* USER CODE END 4 */
 
 /**

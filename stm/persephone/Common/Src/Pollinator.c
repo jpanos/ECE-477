@@ -16,8 +16,25 @@ int check_sense(void){
 	int Touch_Button = ((GPIOB->IDR & GPIO_IDR_ID8) == GPIO_IDR_ID8);
 	return Touch_Button;
 }
+
 void set_angle(int angle){
 	TIM1->CCR1 = angle;
+}
+
+int get_angle() {
+  return TIM1->CCR1;
+}
+
+void set_angle_deg(int deg) {
+  if (deg > 180) deg = 180;
+  else if (deg < 0) deg = 0;
+  int val = deg * 2000 / 180 + 500;
+  set_angle(val);
+}
+
+int get_angle_deg() {
+  int val = get_angle();
+  return (val - 500) * 180 / 2000;
 }
 
 void init_touchISR(void) {

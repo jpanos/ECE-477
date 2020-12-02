@@ -125,8 +125,8 @@ uint8_t mavlink_initialize(void) {
 	shared->mav_mode_flag = 0;
 	// set position mask to ignore all
 	// shared->pos_type_mask = MVPSSC_POS_MASK_IGNORE_ALL;
-	shared->pos_type_mask = MVPSSC_POS_MASK_TAKEOFF;
-	shared->pos_mode |= MVPSSC_POS_MODE_EN;
+	shared->pos_type_mask = MVPSSC_POS_MASK_IGNORE_ALL;
+	shared->pos_mode = MVPSSC_POS_MODE_EN;
 	set_pos_freq(4);
 
 	_initialize_UART_DMA();
@@ -160,6 +160,10 @@ uint8_t send_next_msg() {
 
 uint8_t _send_position_target() {
 	mavlink_message_t msg;
+	uint8_t frame;
+	uint16_t mask;
+	float x,y,z,vx,vy,vz,afx,afy,afz,yaw,yaw_rate;
+
 	spin_lock(HSEM_ID_POS_SETPOINT, TIM6_PROC_ID);
 	mavlink_msg_set_position_target_local_ned_pack(
 			mavlink_system.sysid,
