@@ -189,9 +189,13 @@ uint8_t set_flower_setpoint(uint32_t procID) {
   // +y axis of flowers is +z axis in body coordinate frame of drone
   int diffz = shared->flowercoord.y - POLLINATOR_POS_Y;
 
-  if (abs(diffx) > MVPSSC_POS_X_ERR) vx = .3 * intsgn(diffx);
-  if (abs(diffy) > MVPSSC_POS_Y_ERR) vy = .3 * intsgn(diffy);
+  if (abs(diffx) > MVPSSC_POS_X_ERR) vx = .1 * intsgn(diffx);
+  if (abs(diffy) > MVPSSC_POS_Y_ERR) vy = .1 * intsgn(diffy);
   if (abs(diffz) > MVPSSC_POS_Z_ERR) vz = .1 * intsgn(diffz);
+
+  if (vx == 0 && vy == 0 && vz == 0) {
+    shared->pos_mode |= MVPSSC_POS_MODE_LAND;
+  }
 
   set_pos_setpoint(procID, MAV_FRAME_BODY_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT,
       0, 0, 0, vx, vy, vz, 0, 0, 0, 0, 0);
