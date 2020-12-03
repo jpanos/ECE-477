@@ -6,10 +6,12 @@ import random
 from struct import *
 import time
 import socket
+import math
 
 class Flower:
     def __init__(self, regSize):
         self.regSize = regSize
+        self.active = False
         self.x = []
         self.y = []
         self.z = []
@@ -23,7 +25,15 @@ class Flower:
         self.y.append(y)
         self.z.append(z)
 
+    def getEuclidean(self):
+        loc = self.getLoc()
+        if (not self.active) and (abs(loc[0]) < 50):
+            self.active = True
+            print("[NANO][INFO] LOCATED FLOWER CLUSTER");
+        return (math.sqrt((loc[0]*loc[0] + loc[1]*loc[1] + loc[2]*loc[2])))
+
     def getLoc(self):
+
         return ((sum(self.x)/len(self.x)),(sum(self.y)/len(self.y)),(sum(self.z)/len(self.z)))
 
     def __str__(self):
@@ -120,15 +130,23 @@ if __name__ == "__main__":
     s.connect("/tmp/flower.socket")
     flowerBuff = Flower(10)
     try:
+        tStart = time.time()
         while True:
-            if serial_port.inWaiting() > 7:
+            while serial_port.inWaiting() > 7:
                 (x,y) = unpack('<if', serial_port.read(8))
-                print(f"receiving UART [{x}][{y}]")
+                print(f"[NANO][RX] [{x}][{y}]")
+            while serial_port.inWaiting() > 0:
+                print(f"[NANO][RX] Flushing extra bytes [{serial_port.read(1)}]")
             (a,b,c) = unpack("fff", s.recv(12)) #timing may be weird here, select instead
             flowerBuff.loadLoc(a,b,c) #change ordering?
-            loc = flowerBuff.getLoc()
-            print(f"sending UART {loc}")
-            serial_port.write(pack("<fff", loc[0], loc[1], loc[2])) #change ordering?
+            if time.time() - tStart > 0.10:
+                tStart = time.time()
+                loc = flowerBuff.getLoc()
+                dist = flowerBuff.getEuclidean()
+                print(f"[NANO][DIST][{loc}]:{dist}]")
+                if dist < 2450:
+                    print(f"[NANO][TX] {loc}")
+                    serial_port.write(pack("<fff", loc[0], loc[1], loc[2])) #change ordering?
     except Exception as e:
         s.shutdown(socket.SHUT_RDWR)
         s.close()
