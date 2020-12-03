@@ -21,6 +21,7 @@
 #include "main.h"
 #include "i2c_battery.h"
 #include <shared.h>
+#include <spin_lock.h>
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -109,7 +110,7 @@ void USART3_IRQHandler(void) { // uart 3 interrupt handler
 				structaddr[k] = shared->usartbuff[k];
 			}
 			lock_release(HSEM_ID_FLOWER_POS_DATA, UART3_RX_PROC_ID);
-			set_flower_setpoint();
+			set_flower_setpoint(UART3_RX_PROC_ID);
 		}
 	USART3->ICR |= 0x123bbf;
 }
@@ -196,6 +197,7 @@ int main(void)
 	//  /* Infinite loop */
 	//  /* USER CODE BEGIN WHILE */
   while (shared->mav_state == MAV_STATE_UNINIT) {}
+  set_vel_hold(0);
 	uint8_t prev_val;
 	mavlink_message_t takeoff_msg;
 

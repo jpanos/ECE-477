@@ -21,6 +21,10 @@
 #ifndef INC_MAVLINK_PSSC_H_
 #define INC_MAVLINK_PSSC_H_
 
+#include <stm32h7xx_hal.h>
+#include <common/mavlink.h>
+#include <queue.h>
+
 #define MVPSSC_SUCCESS 0
 #define MVPSSC_FAIL 1
 
@@ -100,6 +104,6 @@ uint8_t set_vel_hold(uint32_t procID);
 
 uint8_t takeoff(float meters);
 
-uint8_t set_flower_setpoint(void);
+uint8_t set_flower_setpoint(uint32_t);
 
 #endif /* INC_MAVLINK_PSSC_H_ */
