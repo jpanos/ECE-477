@@ -437,7 +437,7 @@ static void saveXYZ(const char* filename, const cv::Mat& mat)
 
 cv::Vec3f getStereo( int alg, int SADWindowSize, int numberOfDisparities, bool no_display, bool color_display, float scale,
  string intrinsic_filename, string extrinsic_filename, string disparity_filename, string point_cloud_filename,Ptr<StereoBM> bm, 
- Ptr<StereoSGBM> sgbm, cv::Mat * retFrame){
+ Ptr<StereoSGBM> sgbm, cv::Mat& retFrame){
 
     ArgusSamples::updateFrames();
 
@@ -684,7 +684,7 @@ cv::Vec3f getStereo( int alg, int SADWindowSize, int numberOfDisparities, bool n
         std::cout << elem << " D = " << sqrt(elem[0]*elem[0] + elem[1]*elem[1] + elem[2]*elem[2]) << std::endl; 
 
     }
-    * retFrame = disp8;
+    retFrame = disp8;
     return elem;
 }
 /**
@@ -1031,8 +1031,8 @@ int main(int argc, char** argv)
     {
         loc = ArgusSamples::getStereo(alg, SADWindowSize, numberOfDisparities, no_display, 
             color_display, scale, intrinsic_filename, extrinsic_filename, disparity_filename, 
-            point_cloud_filename, bm, sgbm, &frame);
-        if((waitKey(20) & 0xFF) == 'q') //ESC (prevents closing on actions like taking screenshots)
+            point_cloud_filename, bm, sgbm, frame);
+	if((waitKey(20) & 0xFF) == 'q') //ESC (prevents closing on actions like taking screenshots)
             break;
         memset(buff, 0, sizeof(buff));
         for(int i = 0; i < 3; i++){
@@ -1045,33 +1045,27 @@ int main(int argc, char** argv)
         }
         //send the location data via the socket
         write(data_socket, buff, sizeof(buff));
-        //send the frame to the network socket
-        if(frame.size().width==0)continue;//simple integrity check; skip erroneous data...
-        resize(frame, send, Size(FRAME_WIDTH, FRAME_HEIGHT), 0, 0, INTER_LINEAR);
-        vector < int > compression_params;
-        compression_params.push_back(IMWRITE_JPEG_QUALITY);
-        compression_params.push_back(jpegqual);
-
-        imencode(".jpg", send, encoded, compression_params);
-        imshow("send", send);
+	//send the frame to the network socket
+	if(frame.size().width==0)continue;//simple integrity check; skip erroneous data...
+	resize(frame, send, Size(FRAME_WIDTH, FRAME_HEIGHT), 0, 0, INTER_LINEAR);
+        //vector < int > compression_params;
+        //compression_params.push_back(IMWRITE_PNG_COMPRESSION);
+        //compression_params.push_back(1);
+        //imencode(".png", send, encoded, compression_params);
+        imencode(".png", send, encoded);
+        //imshow("send", send);
         int total_pack = 1 + (encoded.size() - 1) / PACK_SIZE;
-
         int ibuf[1];
         ibuf[0] = total_pack;
-        sock.sendTo(ibuf, sizeof(int), SERVER_ADDR, SERVER_PORT);
-
+	sock.sendTo(ibuf, sizeof(int), SERVER_ADDR, SERVER_PORT);
         for (int i = 0; i < total_pack; i++)
         sock.sendTo( & encoded[i * PACK_SIZE], PACK_SIZE, SERVER_ADDR, SERVER_PORT);
-
         waitKey(FRAME_INTERVAL);
-
         clock_t next_cycle = clock();
         double duration = (next_cycle - last_cycle) / (double) CLOCKS_PER_SEC;
         cout << "\teffective FPS:" << (1 / duration) << " \tkbps:" << (PACK_SIZE * total_pack / duration / 1024 * 8) << endl;
-
         cout << next_cycle - last_cycle;
         last_cycle = next_cycle;
-        
     }
     shutdown(data_socket, 2);
     close(data_socket);

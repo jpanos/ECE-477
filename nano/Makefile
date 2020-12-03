@@ -37,6 +37,7 @@ ARGUS_UTILS_DIR := $(TOP_DIR)/argus/samples/utils
 SRCS := \
 	main.cpp \
 	$(wildcard $(CLASS_DIR)/*.cpp) \
+	udpFramework/PracticalSocket.cpp \
 	$(ARGUS_UTILS_DIR)/Thread.cpp
 
 OBJS := $(SRCS:.cpp=.o)
