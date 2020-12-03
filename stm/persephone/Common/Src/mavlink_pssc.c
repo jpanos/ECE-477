@@ -174,7 +174,7 @@ uint8_t takeoff(float meters) {
   return MVPSSC_SUCCESS;
 }
 
-inline uint8_t intsgn(int i) {
+uint8_t intsgn(int i) {
   return (i > 0) - (i < 0);
 }
 
