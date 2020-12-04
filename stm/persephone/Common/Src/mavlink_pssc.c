@@ -180,6 +180,7 @@ float intsgn(int i) {
 
 uint8_t set_flower_setpoint(uint32_t procID) {
   if (!(shared->pos_mode & MVPSSC_POS_MODE_FLOWER)) return MVPSSC_FAIL;
+  shared->pos_mode |= MVPSSC_POS_MODE_FLOWER_UPDATE;
   float vx = 0,vy = 0,vz = 0;
 
   // +z axis of flowers is +x axis in body coordinate frame of drone

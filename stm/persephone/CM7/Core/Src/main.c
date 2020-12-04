@@ -109,11 +109,7 @@ void USART3_IRQHandler(void) { // uart 3 interrupt handler
 			for (int k = 0; k < size; k++){
 				structaddr[k] = shared->usartbuff[k];
 			}
-<<<<<<< HEAD
 			// lock_release(HSEM_ID_FLOWER_POS_DATA, UART3_RX_PROC_ID);
-=======
-			lock_release(HSEM_ID_FLOWER_POS_DATA, UART3_RX_PROC_ID);
->>>>>>> 7fb874a49e3fa92d3ad112179fee42fcf8f4f663
 			set_flower_setpoint(UART3_RX_PROC_ID);
 		}
 	USART3->ICR |= 0x123bbf;
