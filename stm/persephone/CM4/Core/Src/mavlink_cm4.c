@@ -128,6 +128,7 @@ uint8_t mavlink_initialize(void) {
 	// shared->pos_type_mask = MVPSSC_POS_MASK_IGNORE_ALL;
 	shared->pos_type_mask = MVPSSC_POS_MASK_IGNORE_ALL;
 	shared->pos_mode = MVPSSC_POS_MODE_EN;
+	shared->flower_pos_timeout = 0;
 	set_pos_freq(8);
 
 	_initialize_UART_DMA();
@@ -165,7 +166,48 @@ uint8_t _send_position_target() {
 	uint16_t mask;
 	float x,y,z,vx,vy,vz,afx,afy,afz,yaw,yaw_rate;
 
-	spin_lock(HSEM_ID_POS_SETPOINT, TIM6_PROC_ID);
+  spin_lock(HSEM_ID_POS_SETPOINT, TIM6_PROC_ID);
+  frame = shared->pos_coord_frame;
+  mask = shared->pos_type_mask;
+  x = shared->pos_set_x;
+  y = shared->pos_set_y;
+  z = shared->pos_set_z;
+  vx = shared->pos_set_vx;
+  vy = shared->pos_set_vy;
+  vz = shared->pos_set_vz;
+  afx = shared->pos_set_afx;
+  afy = shared->pos_set_afy;
+  afz = shared->pos_set_afz;
+  yaw = shared->pos_set_yaw;
+  yaw_rate = shared->pos_set_yaw_rate;
+  lock_release(HSEM_ID_POS_SETPOINT, TIM6_PROC_ID);
+
+
+  if (shared->pos_mode & MVPSSC_POS_MODE_LAND) {
+    frame = MAV_FRAME_LOCAL_NED;
+    mask = MVPSSC_POS_MASK_VELOCITY_SETPOINT;
+    vx = 0;
+    vy = 0;
+    vz = .7;
+  }
+  else if (shared->pos_mode & MVPSSC_POS_MODE_FLOWER) {
+    if (shared->pos_mode & MVPSSC_POS_MODE_FLOWER_UPDATE) {
+      shared->pos_mode &= ~MVPSSC_POS_MODE_FLOWER_UPDATE;
+      shared->flower_pos_timeout = 0;
+    }
+    else {
+      shared->flower_pos_timeout++;
+      if (shared->flower_pos_timeout > 8) {
+        frame = MAV_FRAME_LOCAL_NED;
+        mask = MVPSSC_POS_MASK_VEL_YAWRATE_SETPOINT;
+        vx = 0;
+        vy = 0;
+        vz = 0;
+        yaw_rate = -.2;
+      }
+    }
+  }
+
 	mavlink_msg_set_position_target_local_ned_pack(
 			mavlink_system.sysid,
 			mavlink_system.compid,
@@ -173,20 +215,19 @@ uint8_t _send_position_target() {
 			shared->time_boot_ms,
 			mavlink_autopilot.sysid,
 			mavlink_autopilot.compid,
-			shared->pos_coord_frame,
-			shared->pos_type_mask,
-			shared->pos_set_x,
-			shared->pos_set_y,
-			shared->pos_set_z,
-			shared->pos_set_vx,
-			shared->pos_set_vy,
-			shared->pos_set_vz,
-			shared->pos_set_afx,
-			shared->pos_set_afy,
-			shared->pos_set_afz,
-			shared->pos_set_yaw,
-			shared->pos_set_yaw_rate);
-	lock_release(HSEM_ID_POS_SETPOINT, TIM6_PROC_ID);
+			frame,
+			mask,
+			x,
+			y,
+			z,
+			vx,
+			vy,
+			vz,
+			afx,
+			afy,
+			afz,
+			yaw,
+			yaw_rate);
 	if (queue_message(&msg, TIM6_PROC_ID) != NULL) return MVPSSC_SUCCESS;
 	else return MVPSSC_FAIL;
 }

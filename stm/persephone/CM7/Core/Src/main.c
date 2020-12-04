@@ -234,7 +234,7 @@ int main(void)
 
 			// spin around until receive flower positional data
 			set_pos_setpoint(0, MAV_FRAME_BODY_NED, MVPSSC_POS_MASK_VEL_YAWRATE_SETPOINT,
-			    0, 0, 0, 0, 0, -.1, 0, 0, 0, 0, -.4);
+			    0, 0, 0, 0, 0, -.1, 0, 0, 0, 0, -.2);
 //			msleep(4000);
 			while (shared->flowercoord.x == 0) {}
       set_pos_setpoint(0, MAV_FRAME_BODY_NED, MVPSSC_POS_MASK_VEL_YAWRATE_SETPOINT,
