@@ -174,8 +174,8 @@ uint8_t takeoff(float meters) {
   return MVPSSC_SUCCESS;
 }
 
-uint8_t intsgn(int i) {
-  return (i > 0) - (i < 0);
+float intsgn(int i) {
+  return (float) ((i > 0) - (i < 0));
 }
 
 uint8_t set_flower_setpoint(uint32_t procID) {
@@ -184,18 +184,24 @@ uint8_t set_flower_setpoint(uint32_t procID) {
 
   // +z axis of flowers is +x axis in body coordinate frame of drone
   int diffx = shared->flowercoord.z - POLLINATOR_POS_Z;
+  if (diffx < 0) diffx = 0;
   // +x axis of flowers is +y axis in body coordinate frame of drone
   int diffy = shared->flowercoord.x - POLLINATOR_POS_X;
   // +y axis of flowers is +z axis in body coordinate frame of drone
   int diffz = shared->flowercoord.y - POLLINATOR_POS_Y;
 
+
   if (abs(diffx) > MVPSSC_POS_X_ERR) vx = .1 * intsgn(diffx);
   if (abs(diffy) > MVPSSC_POS_Y_ERR) vy = .1 * intsgn(diffy);
-  if (abs(diffz) > MVPSSC_POS_Z_ERR) vz = .1 * intsgn(diffz);
+  // if (abs(diffz) > MVPSSC_POS_Z_ERR) vz = .1 * intsgn(diffz);
 
-  if (vx == 0 && vy == 0 && vz == 0) {
+//  if (shared->pos_x > shared->idle_height) vz = -.1;
+
+  if (abs(diffx) < MVPSSC_POS_X_ERR && abs(diffy) < MVPSSC_POS_Y_ERR) {
     shared->pos_mode |= MVPSSC_POS_MODE_LAND;
+    shared->pos_mode &= ~MVPSSC_POS_MODE_FLOWER;
   }
+  // shared->pos_mode |= MVPSSC_POS_MODE_LAND;
 
   set_pos_setpoint(procID, MAV_FRAME_BODY_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT,
       0, 0, 0, vx, vy, vz, 0, 0, 0, 0, 0);

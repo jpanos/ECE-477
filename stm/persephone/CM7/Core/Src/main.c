@@ -105,11 +105,11 @@ void USART3_IRQHandler(void) { // uart 3 interrupt handler
 			volatile uint8_t * structaddr = (uint8_t *) &(shared->flowercoord);
 			int size = sizeof(Point);
 
-			spin_lock(HSEM_ID_FLOWER_POS_DATA, UART3_RX_PROC_ID);
+			// spin_lock(HSEM_ID_FLOWER_POS_DATA, UART3_RX_PROC_ID);
 			for (int k = 0; k < size; k++){
 				structaddr[k] = shared->usartbuff[k];
 			}
-			lock_release(HSEM_ID_FLOWER_POS_DATA, UART3_RX_PROC_ID);
+			// lock_release(HSEM_ID_FLOWER_POS_DATA, UART3_RX_PROC_ID);
 			set_flower_setpoint(UART3_RX_PROC_ID);
 		}
 	USART3->ICR |= 0x123bbf;
@@ -217,7 +217,7 @@ int main(void)
 			// set to offboard mode
 			set_offboard(0);
 			// a variabe, sets z setpoint to halz z velocit at
-			float z_setpoint = shared->pos_z - .3;
+			shared->idle_height = shared->pos_z - .5;
 			// set z velocity to -.7 m/s (z positive axis is down)
 			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, -.7, 0, 0, 0, 0, 0);
 			// arm drone
@@ -225,7 +225,7 @@ int main(void)
 			msleep(500);
 
 			// wait for z pos to reach above setpoint
-			while (shared->pos_z > z_setpoint) {}
+			while (shared->pos_z > shared->idle_height) {}
 			// turn off yellow led
 			GPIOE->ODR &= ~GPIO_ODR_OD1;
 			// 3rd argument is mask, when set to 0x1000 or 0x2000, puts drone in loiter mode
@@ -234,12 +234,14 @@ int main(void)
 
 			// spin around until receive flower positional data
 			set_pos_setpoint(0, MAV_FRAME_BODY_NED, MVPSSC_POS_MASK_VEL_YAWRATE_SETPOINT,
-			    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -.4);
+			    0, 0, 0, 0, 0, -.1, 0, 0, 0, 0, -.4);
 //			msleep(4000);
 			while (shared->flowercoord.x == 0) {}
       set_pos_setpoint(0, MAV_FRAME_BODY_NED, MVPSSC_POS_MASK_VEL_YAWRATE_SETPOINT,
           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
       shared->pos_mode |= MVPSSC_POS_MODE_FLOWER;
+      GPIOE->ODR ^= GPIO_ODR_OD1;
+//      msleep(3000);
       while (!(shared->pos_mode & MVPSSC_POS_MODE_LAND)) {}
 //      msleep(10000);
 //

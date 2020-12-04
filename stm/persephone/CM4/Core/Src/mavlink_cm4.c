@@ -128,7 +128,7 @@ uint8_t mavlink_initialize(void) {
 	// shared->pos_type_mask = MVPSSC_POS_MASK_IGNORE_ALL;
 	shared->pos_type_mask = MVPSSC_POS_MASK_IGNORE_ALL;
 	shared->pos_mode = MVPSSC_POS_MODE_EN;
-	set_pos_freq(4);
+	set_pos_freq(8);
 
 	_initialize_UART_DMA();
 	_heartbeat_msg_initialize();

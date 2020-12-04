@@ -64,6 +64,8 @@ typedef struct _mavlink_shared_data {
 	float pos_y;
 	float pos_z;
 
+	float idle_height;
+
 	int pos_period;
 	uint8_t pos_mode;
 	uint8_t pos_coord_frame;
