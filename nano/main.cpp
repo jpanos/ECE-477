@@ -98,7 +98,7 @@ int g_signal = 0;
 #define PRODUCER_PRINT(...) printf("PRODUCER: " __VA_ARGS__)
 #define CONSUMER_PRINT(...) printf("CONSUMER: " __VA_ARGS__)
 
-cv::SimpleBlobDetector::Params getBlobDetectorParams(){
+cv::SimpleBlobDetector::Params getBlobDetectorParams(){ //this isnt used right now
     // Setup SimpleBlobDetector parameters.
 	cv::SimpleBlobDetector::Params params;
 
@@ -127,7 +127,7 @@ cv::SimpleBlobDetector::Params getBlobDetectorParams(){
     return params;
 }
 
-class CalibData 
+class CalibData  
 {
 public:
     CalibData(string filename){
@@ -145,6 +145,9 @@ public:
 
 };
 
+/*
+This function initializes a Unix socket for interprocess communication
+*/
 int initUnixSocket(){
     struct sockaddr_un name;
     int connection_socket;
@@ -164,7 +167,11 @@ int initUnixSocket(){
     return connection_socket; 
 }
 
-
+/*
+based on source code provided by Nvida on the Jetson Nano
+see https://docs.nvidia.com/jetson/archives/l4t-archived/l4t-3231/index.html#page/Tegra%20Linux%20Driver%20Package%20Development%20Guide/jetson_xavier_camera_soft_archi.html
+for more details
+*/
 namespace ArgusSamples
 {
 
@@ -699,7 +706,7 @@ cv::Vec3f getStereo( int alg, int SADWindowSize, int numberOfDisparities, bool n
 
 }; /* namespace ArgusSamples */
 
-static void print_help(char** argv)
+static void print_help(char** argv) //not used anymore
 {
     printf("\nDemo stereo matching converting L and R images into disparity and point clouds\n");
     printf("\nUsage: %s <left_image> <right_image> [--algorithm=bm|sgbm|hh|hh4|sgbm3way] [--blocksize=<block_size>]\n"
@@ -707,7 +714,7 @@ static void print_help(char** argv)
            "[--no-display] [--color] [-o=<disparity_image>] [-p=<point_cloud_file>]\n", argv[0]);
 }
 
-void signalHandler(int signal){
+void signalHandler(int signal){ //lets the program know a signal has been sent to the process
     g_signal = signal;
 }
 
@@ -716,9 +723,13 @@ int main(int argc, char** argv)
     signal(SIGINT, signalHandler);
     using namespace ArgusSamples;
     // UniqueObj<OutputStream> captureStream;
-    //CaptureConsumerThread *captureConsumerThread = NULL;
     g_img1_football1 = 0;
     g_img1_football2 = 0;
+
+    /*
+    Based on source code provided by Nvidia for the Jetson Nano. See more here:
+    https://docs.nvidia.com/jetson/archives/l4t-archived/l4t-3231/index.html#page/Tegra%20Linux%20Driver%20Package%20Development%20Guide/jetson_xavier_camera_soft_archi.html
+    */
 
     /* Create the CameraProvider object and get the core interface */
     UniqueObj<CameraProvider> cameraProvider = UniqueObj<CameraProvider>(CameraProvider::create());
@@ -860,34 +871,11 @@ int main(int argc, char** argv)
     if (iCaptureSession_2->repeat(request_2.get()) != STATUS_OK)
         ORIGINATE_ERROR("Failed to start repeat capture request _2");
 
-    /* Wait for CAPTURE_TIME seconds. */
-    //sleep(CAPTURE_TIME);
+    /* Wait for the threads to initialize seconds. */
     sleep(1);
-/*
-    //adding for capturing image frames:
-    int counter = 0;
-    int key;
-        while(1)
-        {
-            updateFrames();
-            imshow("left", g_img1);
-            imshow("right", g_img2);
-            key = (waitKey(50) & 0xFF);
-            if(key == 'q')
-                break;
-            else if(key == 'w'){
-                imwrite("left_" + to_string(counter) + ".png", g_img1);
-                imwrite("right_" + to_string(counter++) + ".png", g_img2);
-                std::cout << "Wrote " + to_string(counter - 1) + " pair" << std::endl;
-            }
-        }
-*/
 
     //OPENCV PORTION
     using namespace cv;
-
-    //CalibData calibCam0 = CalibData("out_camera_0_data.xml");
-    //CalibData calibCam1 = CalibData("out_camera_1_data.xml");
 
     std::string img1_filename = "";
     std::string img2_filename = "";
@@ -982,35 +970,7 @@ int main(int argc, char** argv)
         printf("Command-line parameter error: extrinsic and intrinsic parameters must be specified to compute the point cloud\n");
         return -1;
     }
-    //init Network Socket
-    // int network_socket;
-    // struct sockaddr_in sa;
-
-    // memset((char *)&sa, 0, sizeof(sa));
-    // sa.sin_family = AF_INET;
-    // sa.sin_addr.s_addr = htonl(INADDR_ANY);
-    // sa.sin_port = htons(0);
-
-    // network_socket = socket(AF_INET, SOCK_DGRAM, 0);
-    // if(network_socket == -1) std::cout << "Failed Network Socket Creation" << std::endl;
-
-    // if (bind(network_socket, (struct sockaddr *)&sa, sizeof(sa)) < 0) {
-    //     std::cout << "Failed Network Socket Bind" << std::endl;
-    // }
-
-    //init Network Host
-    // struct hostent *hp;
-    // struct sockaddr_in server;
-    
-    // memset((char*)&server, 0, sizeof(server));
-    // server.sin_family = AF_INET;
-    // server.sin_family = htons(SERVER_PORT);
-
-    // hp = gethostname("192.168.0.113", 13);
-    // if(!hp)std::cout << "gethostname failed!" << std::endl;
-    // memcpy((void*)&server.sin_addr, hp->h_addr_list[0], hp->hlength);
-
-    //init Socket
+    //init Udp Socket
     int connection_socket = initUnixSocket();
     int data_socket;
     char buff[12];
