@@ -1,3 +1,6 @@
+[submodule "nano/udpFramework"]
+	path = nano/udpFramework
+	url = https://github.com/chenxiaoqino/udp-image-streaming
 [submodule "stm/persephone/mavlink_v2"]
 	path = stm/persephone/mavlink_v2
 	url = https://github.com/mavlink/c_library_v2.git
