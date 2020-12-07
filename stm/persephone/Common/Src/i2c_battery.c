@@ -1,4 +1,6 @@
 #include "i2c_battery.h"
+#include <shared.h>
+
 	extern char masterrxdata;
 	extern char mastertxdata;
 	extern int i2cTargReg;

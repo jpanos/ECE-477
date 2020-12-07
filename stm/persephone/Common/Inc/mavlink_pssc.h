@@ -21,6 +21,10 @@
 #ifndef INC_MAVLINK_PSSC_H_
 #define INC_MAVLINK_PSSC_H_
 
+#include <stm32h7xx_hal.h>
+#include <common/mavlink.h>
+#include <queue.h>
+
 #define MVPSSC_SUCCESS 0
 #define MVPSSC_FAIL 1
 
@@ -35,9 +39,14 @@
 #define MVPSCC_OFFBOARD_START 1
 #define	MVPSSC_OFFBOARD_STOP 0
 
-#define MVPSSC_POS_MODE_EN 0x1
-#define MVPSSC_POS_MODE_FLOWER 0x2
+#define MVPSSC_POS_MODE_EN 0x01
+#define MVPSSC_POS_MODE_FLOWER 0x02
+#define MVPSSC_POS_MODE_FLOWER_UPDATE 0x4
 #define MVPSSC_POS_MODE_LAND 0x80
+
+#define MVPSSC_POS_X_ERR 25
+#define MVPSSC_POS_Y_ERR 50
+#define MVPSSC_POS_Z_ERR 50
 
 // mav mask reference: yaw_rate yaw force afz | afy afx vz vy | vx z y x
 #define MVPSSC_POS_MASK_IGNORE_ALL 0x0dff
@@ -96,6 +105,6 @@ uint8_t set_vel_hold(uint32_t procID);
 
 uint8_t takeoff(float meters);
 
-uint8_t set_flower_setpoint(void);
+uint8_t set_flower_setpoint(uint32_t);
 
 #endif /* INC_MAVLINK_PSSC_H_ */
