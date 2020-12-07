@@ -218,6 +218,7 @@ int main(void)
 			set_offboard(0);
 			// a variabe, sets z setpoint to halz z velocit at
 			shared->idle_height = shared->pos_z - .5;
+//			shared->idle_height = shared->altitude_msl + .5;
 			// set z velocity to -.7 m/s (z positive axis is down)
 			set_pos_setpoint(0, MAV_FRAME_LOCAL_NED, MVPSSC_POS_MASK_VELOCITY_SETPOINT, 0, 0, 0, 0, 0, -.7, 0, 0, 0, 0, 0);
 			// arm drone
@@ -226,6 +227,7 @@ int main(void)
 
 			// wait for z pos to reach above setpoint
 			while (shared->pos_z > shared->idle_height) {}
+//			while (shared->altitude_msl < shared->idle_height) {}
 			// turn off yellow led
 			GPIOE->ODR &= ~GPIO_ODR_OD1;
 			// 3rd argument is mask, when set to 0x1000 or 0x2000, puts drone in loiter mode
@@ -236,7 +238,12 @@ int main(void)
 			set_pos_setpoint(0, MAV_FRAME_BODY_NED, MVPSSC_POS_MASK_VEL_YAWRATE_SETPOINT,
 			    0, 0, 0, 0, 0, -.1, 0, 0, 0, 0, -.2);
 //			msleep(4000);
-			while (shared->flowercoord.x == 0) {}
+			while (shared->flowercoord.x == 0) {
+			  float vz = 0;
+			  if (shared->pos_z > shared->idle_height + .1) vz = -.1;
+	      set_pos_setpoint(0, MAV_FRAME_BODY_NED, MVPSSC_POS_MASK_VEL_YAWRATE_SETPOINT,
+	          0, 0, 0, 0, 0, vz, 0, 0, 0, 0, -.2);
+			}
       set_pos_setpoint(0, MAV_FRAME_BODY_NED, MVPSSC_POS_MASK_VEL_YAWRATE_SETPOINT,
           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
       shared->pos_mode |= MVPSSC_POS_MODE_FLOWER;

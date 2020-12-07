@@ -195,7 +195,7 @@ uint8_t set_flower_setpoint(uint32_t procID) {
   if (abs(diffy) > MVPSSC_POS_Y_ERR) vy = .05 * intsgn(diffy);
   // if (abs(diffz) > MVPSSC_POS_Z_ERR) vz = .1 * intsgn(diffz);
 
-//  if (shared->pos_x > shared->idle_height) vz = -.1;
+  if (shared->pos_z > shared->idle_height + .1) vz = -.05;
 
   if (abs(diffx) < MVPSSC_POS_X_ERR && abs(diffy) < MVPSSC_POS_Y_ERR) {
     shared->pos_mode |= MVPSSC_POS_MODE_LAND;

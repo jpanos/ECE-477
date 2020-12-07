@@ -15,7 +15,7 @@
 
 #define POLLINATOR_POS_X 10
 #define POLLINATOR_POS_Y 25
-#define POLLINATOR_POS_Z 405
+#define POLLINATOR_POS_Z 377
 
 int check_sense(void);
 void set_angle(int);
