@@ -10,7 +10,7 @@ This is the source code for our pollination drone project.
 =======
 ## Team Members
 
-###Team members, their role and contact information can be found below. 
+### Team members, their role and contact information can be found below. 
   - Josh Panos, Hardware Engineer, Email: Joshua.Panos1@gmail.com
   - Moiz Rasheed, Team Lead, Email:
   - Jackie Malayter, Systems Engineer, Email:
