@@ -1,0 +1,252 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--
+This is an example weekly progress report document that team members can use to report their individual progress 
+of their ECE477 senior design projects. Weekly progress reports are expected to follow the general guidelines
+presented in the "Progress Report Policy" document, available online at https://engineering.purdue.edu/ece477/Course/Policies/policies.html
+
+Please create 4 copies of this example, renaming each copy to <PurdueID>.html, where <PurdueID> corresponds to
+the Purdue ITAP Career Account ID given by Purdue to each individual team member. If you have any questions,
+contact course staff.
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+<!--Reconfigurable base tag; used to modify the site root location for root-relative links-->
+<base href="https://jpanos.github.io/ECE-477/" />
+
+<!--Content-->
+<title>ECE477 Course Documents</title>
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<meta name="author" content="George Hadley">
+<meta name = "format-detection" content = "telephone=no" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<!--CSS-->
+<link rel="stylesheet" href="css/default.css" type="text/css" media="all" />
+<link rel="stylesheet" href="css/responsive.css">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/content.css">
+<!--[if IE 6]>
+<link href="default_ie6.css" rel="stylesheet" type="text/css" />
+<![endif]-->
+
+</head>
+<body>
+<div id="wrapper_site">
+    <div id="wrapper_page">
+	<!-- Instantiate global site header.-->
+	<div id="header"></div>
+		<!-- Instantiate site global navigation bar.-->
+		<div id="menu"></div>
+	
+		<!-- Instantiate a page banner image. Page banner images should be 1100x350px and should be located within the local
+			img folder located at this directory level. -->
+		<div id="banner">
+			<img src="Files/img/BannerImgExample.jpg"></img>
+		</div>
+	
+		<!-- Instantiate "tools" needed for a page. Tools are premade functional blocks that can be used to build a page,
+			and include things such as a file lister (for listing out homework assignments or tutorials)
+		-->
+		<div id="content">
+            <h2>Progress Report for -Ethan Campbell-</h2>
+            <br>
+            <h4>Week 2:</h4>
+            <b>Date:</b> -9/4/2020-<br>
+            <b>Total hours:</b> -10-<br>
+            <b>Description of design efforts:</b><br>
+            This week, I spent a great deal of time researching what methods would be best for detecting apple blossom flowers. I have found a couple methods that are promising to implement on the Jetson Nano. The first method would take a significant amount of time to implement from scratch, but the method has been proven to work well in a research <a href="https://www.sciencedirect.com/science/article/abs/pii/S016636151730502X">paper</a>. The next method would involve using TensorRT.<br><br> 
+
+Additionally, I have done some research into figuring out what structure and material will work for our pollination appendage. The goal is to pick a material that can naturally carry sticky pollen from flower to flower. In Japan especially, hand pollination is done with horsehair, and that seems like a suitable mating material to use. I have contacted an expert at Purdue within the Horticulture Department. He seemed to know about autonomous pollination methods already, so I am trying to set up a meeting with him for next week. <br><br>
+
+As a group we spent a large amount of time planning out exactly how we think the drone will work. This involved a lot of discussion and documentation. Hopefully this planning will pay off when it comes time to implement the designs for system of the drone and pollination method.<br><br>
+
+I placed an order for artificial apple blossoms that seem realistic enough to test our pollination method on, however the order was just cancelled by the supplier. I am continuing to look for a suitable replacement.</br>
+                      
+        </div>
+        
+            <h4>Week 3:</h4>
+            <b>Date:</b> -9/11/2020-<br>
+            <b>Total hours:</b> -18-<br>
+            <b>Description of design efforts:</b><br>
+This week we were able to start testing the drone. After doing several calibration checks and rotorless flights, we determined we would attempt to hover the drone slightly off the ground. This first flight did not go well because we forgot to check the rotor spin direction for each motor, and just placed the rotors uniformly. This was bad because the drone was unable to balance itself and instead of self correcting, the drone spiraled into an unstable state. Luckily, nothing appeared very damaged except one of the rotors. It only had a small chip missing from the tip, but we ordered replacement rotors immediately. 
+<br><br>
+<img src="Team/progress/img/flight_1.gif"></img>
+<br><br>
+I was able to acquire fairly realistic artificial apple blossom branches. I believe this will be useful when we are testing our vision algorithms.
+<br><br>
+<img src="Team/progress/img/artificialAppleBlossoms.jpg" width=700></img>
+<br><br>
+
+We now have two solid options for datasets to train the neural network with. First, we could manually take many pictures of the artificial blossoms and label them ourselves. We would take the pictures from different cameras and in different lighting settings. We would likely need around 100 images at least to start training the Convolutional Neural Network (CNN). While this method of dataset creation may seem tedious, it’s far better than creating a general use dataset. Those datasets often have tens of thousands of images. We could get away with taking so few photos because we would be testing with just the artificial apple blossoms. This test method would give us a good idea of how the CNN responds to tweaks and changes without us having to retrain the CNN on a massive dataset. The second method is to use a dataset of apple blossoms provided by the USDA. That dataset is much more comprehensive than anything we could create manually. I will likely try both implementations with our CNN.
+<br><br>
+
+I have started to set up the PyTorch environment for training the CNN. Luckily, PyTorch already has a great framework for setting up a CNN, but tweaking it for optimality will require a great deal of research. I am also looking into TensorFlow. I will be training the CNN on my Nvidia GTX 1080. That should be sufficient for our purposes. Once the CNN has been trained, we can export the model to the Jetson Nano. Nvidia provides a framework called TensorRT for the Jetson Nano. That framework will run a neural network optimally on Nvidia’s hardware. I have included their diagram that advertises the benefits of using TensorRT.
+<br><br>
+<img src="Team/progress/img/trt-info.png" width = 900></img>
+<br><br>
+My goal for next week is to start training a CNN.
+<br><br>
+<br><br>
+
+                      
+
+        
+                    <h4>Week 4:</h4>
+            <b>Date:</b> -9/18/2020-<br>
+            <b>Total hours:</b> -17-<br>
+            <b>Description of design efforts:</b><br>
+This week we had a few setbacks, but got several things done as well. We tested the drone again, but the flight didn’t last very long at all. The drone crashed almost immediately. However, we have more important problems to tackle. 
+<br><br>
+We started programming the STM32H745 with boilerplate code generated by STM32CubeIDE. After a single write however, it appeared the STM Link chip was non-responsive. This is a big problem because that chip is responsible for all debugging and usb communication for the board. We have not encountered a problem like this before, and we tried many suggestions listed online for solving similar problems. Additionally, we contacted STM support and course staff for suggestions on how to solve the problem. Because we were able to clear and rewrite the firmware for the entire board, we were optimistic that it was a software issue. It turned out that part of the generated boilerplate code was disabling the STM Link chip. We disabled the Hardware Abstraction Library (HAL) code, and the software ran successfully on the STM32H745. We determined there is something wrong with the autogenerated HAL code. More investigation will be required to determine what command exactly was disabling the STM Link chip, but at least now we are able to successfully program the STM32H745. 
+<br><br>
+I have begun writing the framework for communication between the Jetson Nano and the STM32H745. I am more comfortable using the CMSIS library to interact with the STM32H745’s peripherals, but HAL does seem promising if we can get it working.
+<br><br>
+We also started investigating the software and the hardware required for stereoscopic vision. We settled on using two standard CSI cameras and mounting them securely on a substrate. For development purposes, I fabricated a test board where we could easily adjust camera separation distance.
+<br><br>
+<img src="Team/progress/img/cameraBoard.jpg" width = 900></img>
+<br><br>
+
+
+                    <h4>Week 5:</h4>
+            <b>Date:</b> -9/25/2020-<br>
+            <b>Total hours:</b> -18-<br>
+            <b>Description of design efforts:</b><br>
+This week I worked mostly on developing the uart communication for the Jetson Nano and the STM32H745. Initially I suspected the Jetson Nano serial gpio pins were defective. I was unable to transmit or receive a signal. After digging through some forum posts of people with similar problems, I tried disabling the nvgetty service for the Jetson Nano. This can be accomplished by running these commands:
+<br><br>
+sudo systemctl stop nvgetty
+<br>
+sudo systemctl disable nvgetty
+<br><br>
+Disabling nvgetty ended up allowing me to use the device \dev\ttyTHS1. Now, I have installed a python library for accessing the serial peripheral and that works nicely.
+<br><br>
+After the Nano uart was working, I got started on the STM32H745. Moiz had already proven the STM32H745 uart peripheral was working, so I got started on variable-length message transmission. While developing this, I found the Hardware Abstraction Language (HAL) framework provided by STM has the functionality of sending and receiving uart. HAL can most easily be included in a project by generating the starter code from STM32CubeMx. Within that program, if the UART peripheral is enabled, HAL code headers will be included in the project. Next the header files must be included - in my case it was stm32h7xx_hal_uart.h. I was then able to use the provided HAL functions to handle uart data. In particular, this function was very useful for sending variable-size packets via uart:
+<br><br>
+HAL_UART_Transmit(); 
+<br><br>
+The biggest disadvantage of using this method is the HAL uart library seems to be blocking. That means the functions will stop all other operations of the program until the function completes. This could be a problem because the uart transmission may take a while relative to the rest of our operations on the board. This could be bad if the STM32H745 is expected to be making flight decisions while it is transmitting uart signals. The remedy to this is to use the Direct Memory Access (DMA) peripheral to help transmit the packets asynchronously. This is a significantly more complicated solution that I will be investigating in the coming weeks.
+<br><br>
+<br><br>
+<img src="Team/progress/img/stm_nano.jpg" width = 900></img>
+<br><br>
+                      
+                                          <h4>Week 6:</h4>
+            <b>Date:</b> -10/2/2020-<br>
+            <b>Total hours:</b> -21-<br>
+            <b>Description of design efforts:</b><br>
+This week I wrote the framework for STM32H745 and Jetson Nano UART communication. The best approach when writing an API is usually to write all of the functionality into separate files. Then, in the main structure of the program, the external source and header files can be referenced and utilized. Additionally, in a well written API it is good practice to abstract out the functionality of the provided functions. The user should make a function call and not have to worry about how the function accomplishes its tasks. This is often referred to as blackboxing. 
+<br><br>
+For the UART communication library, I wrote two functions initFlowers() and getFlowers(). initFlowers() initializes a global array of flower structures. getFlowers() queries the Jetson Nano for flower data. For now, the Jetson Nano is running a python listen server that responds to a specific query protocol from the STM32H745. I designed the protocol to be flexible for different types of queries. I have included a diagram outlining the protocol.
+<br><br>
+<img src="Team/progress/img/FlowerProtocol.png" width = 900></img>
+<br><br>
+There were many challenges when trying to get the communication working. The UART HAL library ended up being useful, but required some tinkering. Additionally, the protocol communication is taking about one second and it is blocking. This could be bad, but Moiz is implementing a DMA option for the Mavlink communication that is non-blocking. Additionally, another challenge was aligning the bytes between the python server and the STM software. Choosing the correct endian and packing structures correctly was key. The last problem was fairly minor. The breadboarding was very messy and some stray capacitances and inductances were causing some erroneous bits. Straightening the wires and reducing the amount of things plugged into the breadboard fixed this issue.
+<br><br>
+<br><br>
+
+                                          <h4>Week 7:</h4>
+            <b>Date:</b> -10/9/2020-<br>
+            <b>Total hours:</b> -17-<br>
+            <b>Description of design efforts:</b><br>
+This week we were able to successfully fly the drone. We aren’t sure what was causing our problems with drone flight previously. However, after rebuilding the drone, reattaching the ESCs, and recalibrating the sensors, the drone flew as expected. The most concerning data from our flight was our expected battery life which ended up being only 8 minutes. However, there are still some optimizations we can make to improve our flight time.
+<br><br>
+Additionally this week, I looked into optimizing our object detection code. The biggest advantage of using the Jetson Nano is the onboard CUDA assisted processing. Using CUDA will improve our performance significantly with OpenCV. However, it seems OpenCV python libraries do not necessarily support CUDA, so we will likely have to transition our code to C++. I am familiar with C++, but the OpenCV implementation is very complicated and I am doing a great deal of research into the API currently.
+<br><br>
+<p><a href="https://commons.wikimedia.org/wiki/File:CUDA_processing_flow_(En).PNG#/media/File:CUDA_processing_flow_(En).PNG"><img src="https://upload.wikimedia.org/wikipedia/commons/5/59/CUDA_processing_flow_%28En%29.PNG" alt="CUDA processing flow (En).PNG"></a><br> <a href="https://creativecommons.org/licenses/by/3.0" title="Creative Commons Attribution 3.0">CC BY 3.0</a>, <a href="https://commons.wikimedia.org/w/index.php?curid=5140417">Link</a></p>
+<br><br>
+Above is a quick summary diagram on why CUDA is important. The architecture is extremely useful for repetitive processes that can be run in parallel. Image processing can often utilize CUDA effectively. Next week I hope to have a CUDA assisted OpenCV object detector for flower blossoms functioning.
+<br><br>
+
+
+                                          <h4>Week 9:</h4>
+            <b>Date:</b> -10/24/2020-<br>
+            <b>Total hours:</b> -21-<br>
+            <b>Description of design efforts:</b><br>
+The last two weeks have been fairly busy for me. Last week, we finished our Midterm Design Review. That went very well and I am proud of my team’s progress and commitment to the project.
+<br><br>
+One of the obstacles I had been putting off for a while was redesigning the camera mount for the stereo vision cameras. The old mount was cumbersome and imprecise. I have experience with CAD and I was able to draft up a model of a temporary testing mounting block. This is significantly more precise than the original design, but will have to be redesigned again for the final build. I used my 3D printer to print the mount and attached the cameras. They are significantly better secured than the previous mount, and allow for different spacing settings.
+<br><br>
+<img src="Team/progress/img/camD.png" width = 900></img>
+<br><br>
+<img src="Team/progress/img/camP.jpg" width = 900></img>
+<br><br>
+From a software engineering perspective, I spent a long time figuring out how to build/install the latest version of OpenCV and with which configurations to build the library. Now, I feel like I have a fairly optimal build of OpenCV 4.3. This allows for the latest CUDA implementations with the Jetson Nano. The main caveat, however, is that I will need to program in C++ to take full advantage of the CUDA libraries. I have already converted our blob detector to C++ and OpenCV 4.3. With the new build of OpenCV and the ported code to C++, we saw an approximate 7x speed up in image processing speed and latency. This week I will be implementing our first revision of stereo depth perception in C++.
+<br><br>
+
+
+                                          <h4>Week 10:</h4>
+            <b>Date:</b> -10/30/2020-<br>
+            <b>Total hours:</b> -25-<br>
+            <b>Description of design efforts:</b><br>
+This week I attempted to implement the Stereo Vision Algorithm, cv::cuda::StereoBM, however there is a major issue. The algorithm assumes that two image frames have been captured at the same time. I have embedded a gif of our image streams coming from our camera source framework, GStreamer. I initially chose to use Opencv and GStreamer for ease of use, but it turns out GStreamer is not low enough latency for our application. Gstreamer is great for supporting complex encoding, transformation, and piping to many different systems. However, the disadvangtage is Gstreamer does not support two sychronous streams or two streams with similar enough latency to allow for Stereo Vision Calculations. Instead, there is a much lower level framework provided by Nvidia called Argus. Argus works well because you can request single frames with extremely low latency. We will use this method, but the development time is expected to be significantly higher than using Gstreamer. This is because Argus is a much lower level C++ framework. I will be putting in extra hours to implement this change as soon as possible this week.
+<br><br>
+<img src="Team/progress/img/latency.gif" width = 900></img>
+<br><br>
+The gif shows how the timing of the streams are not identical. This is enough latency to introduce large error into our stereo vision calculations.
+<br><br>
+Additionally, I helped Moiz debug off board autonomous control for the Drone. We are making significant progress in that area.
+<br><br>                      
+
+
+                                          <h4>Week 11:</h4>
+            <b>Date:</b> -11/6/2020-<br>
+            <b>Total hours:</b> -27-<br>
+            <b>Description of design efforts:</b><br>
+This week I implemented the Argus framework for our camera streaming pipeling. There were many challenges when accomplishing this task.
+The first challenge was using Nvidia's Argus function calls and API to generate information that is compatible with an OpenCV frame.
+Argus generates an EGL stream for camera data from our two CSI(camera serial interface) cameras. That data is then converted into a format and color space that OpenCV can load into Mat frames. After that, blob detection and stereo vision can work like it did before, but much faster than using Gstreamer.
+<br><br>
+When I implemented this change, performance was magnificently terrible. Each stream had many seconds of latency and poor fps. The solution I implemented was multi-threading. I am familiar with implementing multi-threading with pthread, but Nvidia supports its own Thread objects that integrate nicely with Argus. Now, I have five threads running to manage the camera stream. The first thread, dubbed the main thread, is responsible for spawning the child threads and calling OpenCV functions to do the upper-level image processing. Then, there are two producer threads and two consumer threads. This works well because the producer threads copy data from the cameras into a DMA buffer constantly, and the consumer threads tell the dma buffer to transfer to a structure in memory, in our case a OpenCV Mat object.
+<br><br>
+After this change, performance was better but did not meet the no noticable latency and high fps requirements for real time image processing. My reasoning was the main loop wasn't being context switched very often relative to the other threads. So, I implemented primitive syncronization methods to reduce the amount of wasted time the producer and consumer threads spent on the control stack. The main loop essentially requests new frames instead of reading from a constantly updating stream of information. This also allows the frames to be synchronized through software. I have attached a gif of the performance of the new system functioning.
+<br><br>
+<img src="Team/progress/img/latency_2.gif" width = 900></img>
+<br><br>
+Next week I will be finalizing the OpenCV stereo image processing with this new camera streaming implementation.
+<br><br>                      
+
+                                          <h4>Week 12:</h4>
+            <b>Date:</b> -11/13/2020-<br>
+            <b>Total hours:</b> -30-<br>
+            <b>Description of design efforts:</b><br>
+This week I made a first pass through stereo depth perception using OpenCV StereoBM. There were some initial challenges with integrating the function calls nicely with my current C++ implementation. However, after a bit of debugging, I made everything work together nicely. The next challenge is fairly significant - optimization. We need to decide how often we want to poll distance from the stereo vision module. If we want a real time implementation, low resolution will likely be necessary along with a decent amount of noise. However depending on the variation of StereoBM we use, SGBM for example, we could produce much more precise and full point clouds. Right now I am optimizing parameters for real time processing because that will be simplest. The next challenge is implementing the image rectification I discussed in a previous post. On the first couple hours of attempts, the rectification did not work. However, if we want the stero vision to be precise, rectification will be required. Afterwards, I can linearly transform the disparity map produced by StereoBM to generate absolute distances from the camera. The details of this transform are simple but beyond the scope of this post, if interested please visit this article published in the OpenCV docs:
+<br><br>
+<a href="https://docs.opencv.org/master/dd/d53/tutorial_py_depthmap.html">OpenCV Depth Map</a>
+<br><br>
+I have posted a video of the depth perception performance in real time. Right now, StereoBM is running with a built-in CUDA implementation and processing with very low latency. The depth map it produces is a grayscale blob-like representation of relative distances from the camera. The lighter the color, the closer the predicted blob is. More can be read about this in the link posted above. I will be spending next week calibrating and optimizing this algorithm to produce absolute distances with low latency.
+<br><br>
+<img src="Team/progress/img/stereo1.gif" width = 900></img>
+<br><br>     
+
+                                          <h4>Week 13:</h4>
+            <b>Date:</b> -11/20/2020-<br>
+            <b>Total hours:</b> -27-<br>
+            <b>Description of design efforts:</b><br>
+This week I further optimized stereo depth perception and it is now to a point where I can begin integrating with the rest of the software of the drone. Currently, I have a rapidly updating object that I can query a pixel (n,m) in an image frame, and get (x,y,z) absolute depth coordinates. This object updates with very low latency and high fps. I achieved this by recalibrating the stereo cameras and genereating intrinsics and extrinsics calibration files. These files are used by OpenCV to rectify and translate image frames into absolute depth measurements. In the demonstration attached, I am querying the middle pixel in the depth map, and printing its (x,y,z) depth coordinates in the terminal. The middle collumn represents predicted depth from the camera in decimeters - and it is approximately 95% accurate. When I remove the flowers, the depths become negative values and unusable with the assumtion of infinite dept. This week I am focusing on combining the flower detection with the depth perception, and then communicating the information with the STM32h745.
+<br><br>
+<img src="Team/progress/img/stereo2.gif" width = 900></img>
+<br><br> 
+
+
+        </div>
+	
+		<!-- Instantiate global footer. Any changes to the footer should be made through the top-level file "footer.html" -->
+		<div id="footer"></div>
+    </div>
+</div>
+
+<!--JS-->
+<script src="js/jquery.js"></script>
+<script src="js/jquery-migrate-1.1.1.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $("#header").load("header.html");
+	$("#menu").load("navbar.html");
+	$("#footer").load("footer.html");
+});
+</script>
+</body>
+</html>

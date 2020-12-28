@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--
+Name: Boilerplate
+Version: v1.0
+Last Updated: 12/17/2013
+Author: George Hadley
+License: Released for free under a Creative Commons Attribution 2.5 License
+
+This website was based upon a number of source materials, which are elaborated upon in credits.txt
+
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+<!--Reconfigurable base tag; used to modify the site root location for root-relative links-->
+<!-- Python SimpleHTTPServer Testing -->
+<!--<base href="http://localhost:8000/" />-->
+<!-- ECE477 preview URL -->
+<!--<base href="https://engineering.purdue.edu/ece477/preview/" />-->
+<!-- ECE477 final URL -->
+<base href="https://jpanos.github.io/ECE-477/" />
+
+<!--Content-->
+<title>ECE477 Team Members</title>
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<meta name="author" content="George Hadley">
+<meta name = "format-detection" content = "telephone=no" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<!--CSS-->
+<link rel="stylesheet" href="css/default.css" type="text/css" media="all" />
+<link rel="stylesheet" href="css/responsive.css">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/content.css">
+<!--[if IE 6]>
+<link href="default_ie6.css" rel="stylesheet" type="text/css" />
+<![endif]-->
+
+</head>
+<body>
+<div id="wrapper_site">
+    <div id="wrapper_page">
+	<!-- Instantiate global site header.-->
+	<div id="header"></div>
+	
+	<!-- Instantiate site global navigation bar.-->
+	<div id="menu"></div>
+
+	<!-- Instantiate a page banner image. Page banner images should be 1100x350px and should be located within the local
+	    img folder located at this directory level. -->
+	<div id="banner">
+	    <img style="width:100%;" src="Media/img/spaceTeam.jpg"></img>
+	</div>
+
+	<!-- Instantiate "tools" needed for a page. Tools are premade functional blocks that can be used to build a page,
+	    and include things such as a file lister (for listing out homework assignments or tutorials)
+	-->
+	<div id="content">
+	    <h2>ECE477 Team Members:</h2>
+	    <!--Your team member information is instantiated here. To edit your information, please edit your team member html file, located in this directory. Instantiate your staff information using the examples below.-->
+	    <div id="member1"></div>
+	    <div id="member2"></div>
+	    <div id="member3"></div>
+	    <div id="member4"></div>
+    </div>
+
+	<!-- Instantiate global footer. Any changes to the footer should be made through the top-level file "footer.html" -->
+	<div id="footer"></div>
+    </div>
+</div>
+
+<!--JS-->
+<script src="js/jquery.js"></script>
+<script src="js/jquery-migrate-1.1.1.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $("#header").load("header.html");
+    $("#menu").load("navbar.html");
+	$("#member1").load("Team/member1.html");
+    $("#member2").load("Team/member2.html");
+	$("#member3").load("Team/member3.html");
+	$("#member4").load("Team/member4.html");
+	$("#footer").load("footer.html");
+});
+</script>
+</body>
+</html>
