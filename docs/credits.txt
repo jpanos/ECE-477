@@ -1,0 +1,33 @@
+Credits (and Legalese) for the Boilerplate design template
+
+================================================================================================
+Site powered by JQuery
+URL: http://jquery.com/
+================================================================================================
+Boilerplate design originally based on:
+"freecss_newark" by myfreecsstemplates.com
+URL: http://www.myfreecsstemplates.com/free_css_templates/freecss_newark/
+"Assembled" Design by Free CSS Templates
+http://www.freecsstemplates.org
+================================================================================================
+Menu Dropdown Code provided via Superfish project
+URL: http://users.tpg.com.au/j_birch/plugins/superfish/
+================================================================================================
+Slideshow Code provided via Pixedelic Camera plugin
+URL: http://www.pixedelic.com/plugins/camera/
+================================================================================================
+Photography Credits:
+"Purdue University logo" copyright Purdue University 2013. All rights reserved.
+"Purdue Belltower" Photograph by George Hadley (2013). 
+    Released under a Creative Commons Attribution 2.5 License
+"Hovde Hall of Administration" Photograph by George Hadley (2013). 
+    Released under a Creative Commons Attribution 2.5 License
+"Neil Armstrong" Photograph by George Hadley (2013). 
+    Released under a Creative Commons Attribution 2.5 License.
+
+Some icons provided via iconify.it
+===============================================================================================
+Special thanks to: 
+
++Sean Ma
++Peter O'Reagan
