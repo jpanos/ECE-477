@@ -1,0 +1,25 @@
+<link rel="stylesheet" href="css/camera.css">
+
+<section class="container">
+    <div class="camera_wrap" style="display: block; height: 400px">
+	<div data-src="Media/img/spaceTeam.jpg"></div>
+	<div data-src="img/slideshow/PurdueBelltower.jpg"></div>
+	<div data-src="img/slideshow/HovdeHallofAdministration.jpg"></div>
+	<div data-src="img/slideshow/NeilArmstrong.jpg"></div>
+    </div>
+</section>
+
+<script src="js/camera.js"></script>
+<script>
+    $(document).ready(function(){
+        jQuery('.camera_wrap').camera();
+	for (var e of document.getElementsByClassName("imgLoaded")) {
+	  console.log(e);
+	  let u = new URL(e.src);
+	  if (u.pathname == "/477grp4/Media/img/spaceTeam.jpg") {
+	    console.log('hi');
+	    e.style.transform = "translate(0px, -52px)";
+	  }
+	}	
+    });
+</script>

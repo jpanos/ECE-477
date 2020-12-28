@@ -1,0 +1,241 @@
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,700,800);
+
+/**************************
+*
+*	GENERAL
+*
+**************************/
+.camera_wrap img, 
+.camera_wrap ol, .camera_wrap ul, .camera_wrap li,
+.camera_wrap table, .camera_wrap tbody, .camera_wrap tfoot, .camera_wrap thead, .camera_wrap tr, .camera_wrap th, .camera_wrap td
+.camera_thumbs_wrap a, .camera_thumbs_wrap img, 
+.camera_thumbs_wrap ol, .camera_thumbs_wrap ul, .camera_thumbs_wrap li,
+.camera_thumbs_wrap table, .camera_thumbs_wrap tbody, .camera_thumbs_wrap tfoot, .camera_thumbs_wrap thead, .camera_thumbs_wrap tr, .camera_thumbs_wrap th, .camera_thumbs_wrap td {
+	background: none;
+	border: 0;
+	font: inherit;
+	font-size: 100%;
+	margin: 0;
+	padding: 0;
+	vertical-align: baseline;
+	list-style: none;
+	line-height: ;
+}
+.camera_wrap {
+	display: none;
+	float: none;
+	position: relative;
+	z-index: 1;
+	margin: 0 !important;
+    
+}
+.camera_wrap img {
+	max-width: none !important;
+	/*border-radius: 0 20px 0 0;
+	overflow: hidden;*/
+}
+.camera_fakehover {
+	height: 100%;
+	position: relative;
+	width: inherit;
+	z-index: 1;
+}
+.camera_wrap {
+	width: inherit;
+	/*padding-bottom:99px;*/
+}
+.camera_src {
+	display: none;
+}
+.cameraCont, .cameraContents {
+	height: 100%;
+	position: relative;
+	width: inherit;
+	z-index: 1;
+}
+.cameraSlide {
+	bottom: 0;
+	left: 0;
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: inherit;
+}
+.cameraContent {
+	bottom: 0;
+	display: none;
+	left: 0;
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: inherit;
+}
+.camera_target {
+	bottom: 0;
+	height: 100%;
+	left: 0;
+	overflow: hidden;
+	position: absolute;
+	right: 0;
+	text-align: left;
+	top: 0;
+	width: inherit;
+	z-index: 0;
+}
+.camera_overlayer {
+	bottom: 0;
+	height: 100%;
+	left: 0;
+	overflow: hidden;
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: inherit;
+	z-index: 0;
+}
+.camera_target_content {
+	bottom: 0;
+	left: 0;
+	overflow: visible;
+	position: absolute;
+	right: 0;
+	top: 0;
+	z-index: 2;
+}
+.camera_target_content .camera_link {
+	display: block;
+	height: 100%;
+	text-decoration: none;
+}
+.camera_loader {
+	background: #fff url(../img/camera-loader.gif) no-repeat center;
+	background: rgba(255, 255, 255, 0.9) url(../img/camera-loader.gif) no-repeat center;
+	border: 1px solid #ffffff;
+	-webkit-border-radius: 18px;
+	-moz-border-radius: 18px;
+	border-radius: 18px;
+	height: 36px;
+	left: 50%;
+	overflow: hidden;
+	position: absolute;
+	margin: -18px 0 0 -18px;
+	top: 50%;
+	width: 36px;
+	z-index: 3;
+}
+.camera_clear {
+	display: block;
+	clear: both;
+}
+.showIt {
+	display: none;
+}
+.camera_clear {
+	clear: both;
+	display: block;
+	height: 1px;
+	margin: 0px;
+	position: relative;
+}
+.slider{
+	position: relative;
+	margin-top:0;
+	z-index:1;
+	top: 0;
+	border: 0px solid #e7e7e7;
+	margin-bottom:0px;
+}
+.camera-banner{
+	position: absolute;
+	width: 960px;
+	left: 50%;
+	margin-left: -480px;
+	font-family: 'Open Sans', sans-serif;
+	font-size: 50px;
+	line-height: 1em;
+	color: #fff;
+	text-transform: uppercase;
+	font-weight: bold;
+	top: 30%;
+}
+.camera_pag {
+	position: absolute;
+	z-index: 10;
+	bottom:87px;
+	left:10%;
+	padding:0;
+	display:inline-block;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+.camera-caption {
+	position: absolute;
+	top:41%;
+	left:10%;
+	z-index:100;
+	display: block;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	color:#2f2f2f;
+	font-family:'Righteous';
+	font-size:64px;
+	line-height:58px;
+	font-style:normal;
+	text-transform:uppercase;
+	letter-spacing:-1px;
+}
+/*.camera-caption .title1 {
+	font-family:'Righteous';
+	font-size:24px;
+	line-height:24px;
+	top:0;
+	color:#f4d35c;
+	letter-spacing:-1px;
+	margin-left:13px;
+}*/
+.camera_prev span, .camera_next span{
+	position: absolute;
+	display: block;
+	width:25px;
+	height:25px;
+	bottom:12px;
+	cursor: pointer;
+	z-index: 1000;
+}
+.camera_prev span{
+	right:39px;
+	background:url(../img/prev.png) 0 top no-repeat;
+}
+.camera_prev span:hover{background:url(../img/prev.png) 0 bottom no-repeat;}
+.camera_next span{
+	right:13px;
+	background:url(../img/next.png) 0 top no-repeat;
+}
+.camera_next span:hover{background:url(../img/next.png) 0 bottom no-repeat;}
+/*---------------------------------------------------------------------------------------------------------------------------*/
+@media (min-width: 1200px) {
+}
+/*---------------------------------------------------------------------------------------------------------------------------*/
+@media (min-width: 980px) and (max-width: 1199px){
+}
+/*---------------------------------------------------------------------------------------------------------------------------*/
+@media (max-width: 979px){
+}
+/*---------------------------------------------------------------------------------------------------------------------------*/
+@media (max-width: 767px){
+}
+/*---------------------------------------------------------------------------------------------------------------------------*/
+@media (min-width: 626px) and (max-width: 767px) { 
+}
+/*---------------------------------------------------------------------------------------------------------------------------*/
+@media (max-width: 626px) {
+}
+/*---------------------------------------------------------------------------------------------------------------------------*/
+@media (max-width: 560px) {
+}
+@media (max-width: 480px) {
+}
+@media (max-width: 320px) {
+}
