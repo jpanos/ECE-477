@@ -5,7 +5,7 @@
 
 ## Team Members
 Team members, their role and contact information can be found below. 
-  - Josh Panos, Hardware Engineer, Email: Joshua.Panos1@gmail.com
-  - Moiz Rasheed, Team Lead, Github: msrasheed
-  - Jackie Malayter, Systems Engineer, Email:
-  - Ethan Campbell, Software Engineer, Email:
+  - [Josh Panos](https://jpanos.github.io/ECE-477/Team/progress/panos.html), Hardware Engineer, Email: Joshua.Panos1@gmail.com
+  - [Moiz Rasheed](https://jpanos.github.io/ECE-477/Team/progress/mrasheed.html), Team Lead, Github: msrasheed
+  - [Jackie Malayter](https://jpanos.github.io/ECE-477/Team/progress/malayter.html), Systems Engineer, Email:
+  - [Ethan Campbell](https://jpanos.github.io/ECE-477/Team/progress/campb338.html), Software Engineer, Email:
