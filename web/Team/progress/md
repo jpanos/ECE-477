@@ -1,0 +1,4 @@
+#!/bin/bash
+perl Markdown_1.0.1/Markdown.pl $1.md > $1md.html
+sed 's/<p><img/<p class=markdown_image><img/g' $1md.html > $1md1.html
+mv $1md1.html $1md.html
