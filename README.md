@@ -10,7 +10,7 @@ This is the source code for our pollination drone project.
 =======
 ## Team Members
 ###Team members, their responsiblities and contact information can be found below. 
-  -Josh Panos
-  -Moiz Rasheed
-  -Jackie Malayter 
-  -Ethan Campbell
+  - Josh Panos
+  - Moiz Rasheed
+  - Jackie Malayter 
+  - Ethan Campbell
