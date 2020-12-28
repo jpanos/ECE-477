@@ -1,4 +1,4 @@
-# Purdue University Fall 2021 Senior Design Project.
+# Purdue University Fall 2020 Senior Design Project.
  
  This is the source code for our pollination drone project. 
 [See here for more info](http://jpanos.github.io/ECE-477)
